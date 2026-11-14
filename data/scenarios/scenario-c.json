@@ -1,0 +1,17 @@
+{
+  "scenarioId": "optimized-traj-c",
+  "name": "Scenario C: Optimized Trajectory",
+  "description": "Balanced high-smoothness trajectory with faster feed and trimmed dwell to minimize idle waiting and energy/unit.",
+  "seed": 42,
+  "timestepMs": 20,
+  "cycleMode": "FIXED_COUNT",
+  "targetQuantity": 5,
+  "targetProductionRatePerHour": 60,
+  "robotSpeedScale": 1.25,
+  "robotAccelScale": 1.15,
+  "inputConveyorSpeedMps": 0.35,
+  "outputConveyorSpeedMps": 0.35,
+  "processingDwellMs": 1800,
+  "workpieceMassKg": 1.2,
+  "trajectorySmoothnessFactor": 0.92
+}

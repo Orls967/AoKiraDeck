@@ -1,0 +1,345 @@
+{
+  "schemaVersion": "1.0.0",
+  "workcellId": "aokira-cell-v1",
+  "robot": {
+    "modelId": "aokira-6dof-generic-v1",
+    "dof": 6,
+    "payloadLimitKg": 5.0,
+    "baseMountPose": {
+      "position": { "x": 0.0, "y": 0.45, "z": 0.0 },
+      "orientation": { "x": -0.5, "y": 0.5, "z": 0.5, "w": 0.5 }
+    },
+    "toolTcpOffsetMeters": { "x": 0.0, "y": 0.0, "z": 0.12 },
+    "joints": [
+      {
+        "id": "J1",
+        "index": 0,
+        "name": "Base Yaw",
+        "axisLocal": [0, 0, 1],
+        "dh": {
+          "thetaOffsetRad": 0.0,
+          "dMeters": 0.34,
+          "aMeters": 0.08,
+          "alphaRad": -1.5707963267948966
+        },
+        "minAngleRad": -2.9670597283903604,
+        "maxAngleRad": 2.9670597283903604,
+        "maxVelocityRadPerSec": 3.141592653589793,
+        "maxAccelerationRadPerSec2": 7.853981633974483,
+        "homeAngleRad": 0.0,
+        "ratedTorqueNm": 120.0
+      },
+      {
+        "id": "J2",
+        "index": 1,
+        "name": "Shoulder Pitch",
+        "axisLocal": [0, 0, 1],
+        "dh": {
+          "thetaOffsetRad": -1.5707963267948966,
+          "dMeters": 0.0,
+          "aMeters": 0.42,
+          "alphaRad": 0.0
+        },
+        "minAngleRad": -1.6580627893946132,
+        "maxAngleRad": 2.0943951023931953,
+        "maxVelocityRadPerSec": 2.6179938779914944,
+        "maxAccelerationRadPerSec2": 6.283185307179586,
+        "homeAngleRad": 0.17453292519943295,
+        "ratedTorqueNm": 140.0
+      },
+      {
+        "id": "J3",
+        "index": 2,
+        "name": "Elbow Pitch",
+        "axisLocal": [0, 0, 1],
+        "dh": {
+          "thetaOffsetRad": 0.0,
+          "dMeters": 0.0,
+          "aMeters": 0.05,
+          "alphaRad": -1.5707963267948966
+        },
+        "minAngleRad": -2.0943951023931953,
+        "maxAngleRad": 2.356194490192345,
+        "maxVelocityRadPerSec": 3.141592653589793,
+        "maxAccelerationRadPerSec2": 7.853981633974483,
+        "homeAngleRad": 0.3490658503988659,
+        "ratedTorqueNm": 90.0
+      },
+      {
+        "id": "J4",
+        "index": 3,
+        "name": "Forearm Roll",
+        "axisLocal": [0, 0, 1],
+        "dh": {
+          "thetaOffsetRad": 0.0,
+          "dMeters": 0.4,
+          "aMeters": 0.0,
+          "alphaRad": 1.5707963267948966
+        },
+        "minAngleRad": -3.141592653589793,
+        "maxAngleRad": 3.141592653589793,
+        "maxVelocityRadPerSec": 4.1887902047863905,
+        "maxAccelerationRadPerSec2": 10.471975511965978,
+        "homeAngleRad": 0.0,
+        "ratedTorqueNm": 45.0
+      },
+      {
+        "id": "J5",
+        "index": 4,
+        "name": "Wrist Pitch",
+        "axisLocal": [0, 0, 1],
+        "dh": {
+          "thetaOffsetRad": 0.0,
+          "dMeters": 0.0,
+          "aMeters": 0.0,
+          "alphaRad": -1.5707963267948966
+        },
+        "minAngleRad": -2.181661564992912,
+        "maxAngleRad": 2.181661564992912,
+        "maxVelocityRadPerSec": 4.1887902047863905,
+        "maxAccelerationRadPerSec2": 10.471975511965978,
+        "homeAngleRad": 1.0471975511965979,
+        "ratedTorqueNm": 35.0
+      },
+      {
+        "id": "J6",
+        "index": 5,
+        "name": "Tool Flange Roll",
+        "axisLocal": [0, 0, 1],
+        "dh": {
+          "thetaOffsetRad": 0.0,
+          "dMeters": 0.1,
+          "aMeters": 0.0,
+          "alphaRad": 0.0
+        },
+        "minAngleRad": -6.283185307179586,
+        "maxAngleRad": 6.283185307179586,
+        "maxVelocityRadPerSec": 6.283185307179586,
+        "maxAccelerationRadPerSec2": 15.707963267948966,
+        "homeAngleRad": 0.0,
+        "ratedTorqueNm": 25.0
+      }
+    ],
+    "collisionCapsules": [
+      {
+        "kind": "capsule",
+        "ownerId": "link-1",
+        "localStart": { "x": -0.08, "y": -0.21, "z": 0.0 },
+        "localEnd": { "x": 0.0, "y": 0.0, "z": 0.0 },
+        "radius": 0.095
+      },
+      {
+        "kind": "capsule",
+        "ownerId": "link-2",
+        "localStart": { "x": -0.33, "y": 0.0, "z": 0.0 },
+        "localEnd": { "x": -0.08, "y": 0.0, "z": 0.0 },
+        "radius": 0.07
+      },
+      {
+        "kind": "capsule",
+        "ownerId": "link-3",
+        "localStart": { "x": -0.05, "y": 0.0, "z": 0.0 },
+        "localEnd": { "x": 0.0, "y": 0.0, "z": 0.0 },
+        "radius": 0.065
+      },
+      {
+        "kind": "capsule",
+        "ownerId": "link-4",
+        "localStart": { "x": 0.0, "y": -0.23, "z": 0.0 },
+        "localEnd": { "x": 0.0, "y": -0.07, "z": 0.0 },
+        "radius": 0.055
+      },
+      {
+        "kind": "capsule",
+        "ownerId": "link-5",
+        "localStart": { "x": 0.0, "y": 0.0, "z": -0.095 },
+        "localEnd": { "x": 0.0, "y": 0.0, "z": -0.03 },
+        "radius": 0.045
+      },
+      {
+        "kind": "capsule",
+        "ownerId": "gripper",
+        "localStart": { "x": 0.0, "y": 0.0, "z": 0.01 },
+        "localEnd": { "x": 0.0, "y": 0.0, "z": 0.062 },
+        "radius": 0.055
+      }
+    ]
+  },
+  "gripper": {
+    "id": "gripper",
+    "maxOpeningMeters": 0.08,
+    "minOpeningMeters": 0.0,
+    "closedWidthForPartMeters": 0.06,
+    "actuationTimeMs": 300,
+    "massKg": 0.85
+  },
+  "inputConveyor": {
+    "id": "input-conveyor",
+    "originWorld": { "x": -0.96, "y": 0.67, "z": 0.08 },
+    "directionUnit": { "x": 1.0, "y": 0.0, "z": 0.0 },
+    "lengthMeters": 1.0,
+    "widthMeters": 0.24,
+    "beltTopY": 0.72,
+    "defaultSpeedMetersPerSec": 0.2,
+    "minSpeedMetersPerSec": 0.05,
+    "maxSpeedMetersPerSec": 0.6,
+    "targetZoneWorld": { "x": -0.56, "y": 0.75, "z": 0.08 },
+    "collisionBox": {
+      "kind": "box",
+      "ownerId": "input-conveyor",
+      "center": { "x": -0.96, "y": 0.67, "z": 0.08 },
+      "halfExtents": { "x": 0.5, "y": 0.05, "z": 0.12 },
+      "orientation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 }
+    }
+  },
+  "outputConveyor": {
+    "id": "output-conveyor",
+    "originWorld": { "x": 0.96, "y": 0.67, "z": 0.08 },
+    "directionUnit": { "x": 1.0, "y": 0.0, "z": 0.0 },
+    "lengthMeters": 1.0,
+    "widthMeters": 0.24,
+    "beltTopY": 0.72,
+    "defaultSpeedMetersPerSec": 0.2,
+    "minSpeedMetersPerSec": 0.05,
+    "maxSpeedMetersPerSec": 0.6,
+    "targetZoneWorld": { "x": 0.56, "y": 0.75, "z": 0.08 },
+    "collisionBox": {
+      "kind": "box",
+      "ownerId": "output-conveyor",
+      "center": { "x": 0.96, "y": 0.67, "z": 0.08 },
+      "halfExtents": { "x": 0.5, "y": 0.05, "z": 0.12 },
+      "orientation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 }
+    }
+  },
+  "processingStation": {
+    "id": "processing-station",
+    "originWorld": { "x": 0.0, "y": 0.36, "z": -0.56 },
+    "fixtureTopY": 0.72,
+    "targetPoseWorld": {
+      "position": { "x": 0.0, "y": 0.75, "z": -0.56 },
+      "orientation": { "x": 0.5, "y": 0.5, "z": -0.5, "w": 0.5 }
+    },
+    "defaultProcessTimeMs": 2500,
+    "collisionBoxes": [
+      {
+        "kind": "box",
+        "ownerId": "processing-station",
+        "center": { "x": 0.0, "y": 0.36, "z": -0.56 },
+        "halfExtents": { "x": 0.2, "y": 0.36, "z": 0.18 },
+        "orientation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 }
+      },
+      {
+        "kind": "box",
+        "ownerId": "processing-station-scanner",
+        "center": { "x": 0.0, "y": 0.84, "z": -0.71 },
+        "halfExtents": { "x": 0.08, "y": 0.12, "z": 0.03 },
+        "orientation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 }
+      },
+      {
+        "kind": "box",
+        "ownerId": "processing-station-clamp-rear",
+        "center": { "x": 0.0, "y": 0.7375, "z": -0.64 },
+        "halfExtents": { "x": 0.03, "y": 0.0175, "z": 0.015 },
+        "orientation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 }
+      },
+      {
+        "kind": "box",
+        "ownerId": "processing-station-clamp-front",
+        "center": { "x": 0.0, "y": 0.7375, "z": -0.48 },
+        "halfExtents": { "x": 0.03, "y": 0.0175, "z": 0.015 },
+        "orientation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 }
+      }
+    ]
+  },
+  "workpieceTemplate": {
+    "dimensionsMeters": { "x": 0.06, "y": 0.06, "z": 0.06 },
+    "defaultMassKg": 1.2
+  },
+  "staticObstacles": [
+    {
+      "kind": "box",
+      "ownerId": "robot-pedestal",
+      "center": { "x": 0.0, "y": 0.225, "z": 0.0 },
+      "halfExtents": { "x": 0.22, "y": 0.225, "z": 0.22 },
+      "orientation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 }
+    },
+    {
+      "kind": "box",
+      "ownerId": "estop-station",
+      "center": { "x": 1.72, "y": 0.525, "z": 1.05 },
+      "halfExtents": { "x": 0.12, "y": 0.525, "z": 0.12 },
+      "orientation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 }
+    },
+    {
+      "kind": "box",
+      "ownerId": "safety-fence-north",
+      "center": { "x": 0.0, "y": 0.725, "z": -1.2 },
+      "halfExtents": { "x": 1.6, "y": 0.725, "z": 0.025 },
+      "orientation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 }
+    },
+    {
+      "kind": "box",
+      "ownerId": "safety-fence-south",
+      "center": { "x": 0.0, "y": 0.725, "z": 1.2 },
+      "halfExtents": { "x": 1.6, "y": 0.725, "z": 0.025 },
+      "orientation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 }
+    },
+    {
+      "kind": "box",
+      "ownerId": "safety-fence-west-north",
+      "center": { "x": -1.6, "y": 0.725, "z": -0.69 },
+      "halfExtents": { "x": 0.025, "y": 0.725, "z": 0.51 },
+      "orientation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 }
+    },
+    {
+      "kind": "box",
+      "ownerId": "safety-fence-west-south",
+      "center": { "x": -1.6, "y": 0.725, "z": 0.69 },
+      "halfExtents": { "x": 0.025, "y": 0.725, "z": 0.51 },
+      "orientation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 }
+    },
+    {
+      "kind": "box",
+      "ownerId": "safety-fence-west-lower",
+      "center": { "x": -1.6, "y": 0.36, "z": 0.0 },
+      "halfExtents": { "x": 0.025, "y": 0.36, "z": 0.18 },
+      "orientation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 }
+    },
+    {
+      "kind": "box",
+      "ownerId": "safety-fence-west-upper",
+      "center": { "x": -1.6, "y": 1.26, "z": 0.0 },
+      "halfExtents": { "x": 0.025, "y": 0.19, "z": 0.18 },
+      "orientation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 }
+    },
+    {
+      "kind": "box",
+      "ownerId": "safety-fence-east-north",
+      "center": { "x": 1.6, "y": 0.725, "z": -0.69 },
+      "halfExtents": { "x": 0.025, "y": 0.725, "z": 0.51 },
+      "orientation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 }
+    },
+    {
+      "kind": "box",
+      "ownerId": "safety-fence-east-south",
+      "center": { "x": 1.6, "y": 0.725, "z": 0.69 },
+      "halfExtents": { "x": 0.025, "y": 0.725, "z": 0.51 },
+      "orientation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 }
+    },
+    {
+      "kind": "box",
+      "ownerId": "safety-fence-east-lower",
+      "center": { "x": 1.6, "y": 0.36, "z": 0.0 },
+      "halfExtents": { "x": 0.025, "y": 0.36, "z": 0.18 },
+      "orientation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 }
+    },
+    {
+      "kind": "box",
+      "ownerId": "safety-fence-east-upper",
+      "center": { "x": 1.6, "y": 1.26, "z": 0.0 },
+      "halfExtents": { "x": 0.025, "y": 0.19, "z": 0.18 },
+      "orientation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 }
+    }
+  ],
+  "nearCollisionThresholdMeters": 0.025
+}

@@ -1,0 +1,17 @@
+{
+  "scenarioId": "faster-robot-b",
+  "name": "Scenario B: Faster Robot Motion",
+  "description": "High-speed manipulator configuration (1.35x speed, 1.30x accel) keeping baseline conveyors and process dwell.",
+  "seed": 42,
+  "timestepMs": 20,
+  "cycleMode": "FIXED_COUNT",
+  "targetQuantity": 5,
+  "targetProductionRatePerHour": 60,
+  "robotSpeedScale": 1.35,
+  "robotAccelScale": 1.3,
+  "inputConveyorSpeedMps": 0.2,
+  "outputConveyorSpeedMps": 0.2,
+  "processingDwellMs": 2500,
+  "workpieceMassKg": 1.2,
+  "trajectorySmoothnessFactor": 1.0
+}

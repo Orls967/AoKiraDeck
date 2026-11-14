@@ -13,6 +13,7 @@ build/
 target/
 pkg/
 coverage/
+*.tsbuildinfo
 apps/web/src/wasm/
 
 # Environment and secrets

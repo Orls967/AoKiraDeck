@@ -1,0 +1,17 @@
+{
+  "scenarioId": "conveyor-tuned-d",
+  "name": "Scenario D: Adjusted Conveyor Speed",
+  "description": "Accelerated input/output conveyors (0.45 m/s) paired with baseline robot kinematics to eliminate belt starvation.",
+  "seed": 42,
+  "timestepMs": 20,
+  "cycleMode": "FIXED_COUNT",
+  "targetQuantity": 5,
+  "targetProductionRatePerHour": 60,
+  "robotSpeedScale": 1.0,
+  "robotAccelScale": 1.0,
+  "inputConveyorSpeedMps": 0.45,
+  "outputConveyorSpeedMps": 0.45,
+  "processingDwellMs": 2500,
+  "workpieceMassKg": 1.2,
+  "trajectorySmoothnessFactor": 1.0
+}
