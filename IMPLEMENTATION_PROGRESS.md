@@ -1,6 +1,6 @@
 # AoKira — Implementation Progress Tracker
 
-**Current Phase:** Phase 3 Complete -> Implementing Phase 5 (Python API)
+**Current Phase:** Phase 3 & 5 Complete -> Starting Phase 2 (Core 3D Workcell & Digital Twin)
 **Last Updated:** 2026-11-15
 **Branch:** `main`
 **Remote:** `https://github.com/Orls967/AoKira.git`
@@ -15,9 +15,13 @@
   - Initialized `crates/aokira-engine` (Rust + `wasm-bindgen` + `serde`), `apps/api` (FastAPI + Pydantic v2 + NumPy/SciPy + `.venv`), and `apps/web` (Vite + React 18 + TS strict + Tailwind CSS tokens + R3F/Drei + Zustand + Recharts + Vitest).
   - Implemented `AppShell` (5 routes, status pills, mobile nav drawer), `WebGLErrorBoundary`, `WebGLFallbackView` (2D SVG schematic), `useReducedMotion`, canonical TS types & config loaders.
   - Verified: `npm run typecheck`, `npm run test` (2 passed), `npm run build`, `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test` (1 passed), `pytest` (1 passed), `ruff check .`.
-- [x] **Phase 3 — Deterministic Rust/WASM Simulation Core**:
+- [x] **Phase 3 — Deterministic Rust/WASM Simulation Core (`565fb74`)**:
   - Implemented `math`, `kinematics` (Standard DH FK, 3-seed DLS IK), `trajectory` (quintic time scaling), `collision` (exact capsule-capsule, capsule-box, held OBB-box with 25 mm near-collision threshold), `robot`, `gripper`, `conveyor` (including drop-zone interlock while robot releases/retracts finished billet), `metrics`, `production` (8-stage state machine), `scheduler`, and `AokiraSimEngine` `wasm_bindgen` FFI.
   - Generated canonical fixture `data/fixtures/baseline-3cycles.golden.json` and verified all 22 Rust tests (`RUST-KIN-01..03`, `RUST-IK-01..04`, `RUST-TRAJ-01..03`, `RUST-COL-01..06`, `RUST-PROD-01..06`), `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, and `wasm-pack build` (`264K` `aokira_engine_bg.wasm`).
+- [x] **Phase 5 — Stateless Python FastAPI Analytics & Optimization Service**:
+  - Implemented Pydantic v2 `camelCase` request/response/error schemas, 5 MB payload cap middleware (`413`), uniform `ApiErrorResponse` error handlers (`VALIDATION_ERROR`, `INVALID_EVENT_SEQUENCE`, `INFEASIBLE_OPTIMIZATION`, `INTERNAL_ERROR`), and CORS headers.
+  - Implemented event-driven `analytics.py`, `validation.py`, `energy.py`, `bottleneck.py`, `forecasting.py`, analytical quintic `surrogate.py`, and SciPy SLSQP `optimization.py` (`/api/v1/analytics/evaluate`, `/api/v1/scenarios/compare`, `/api/v1/optimization/run`), plus `apps/api/Dockerfile`.
+  - Verified `ruff check .` (0 errors) and `pytest -v` (8 passed: `API-01..07` + smoke check, golden fixture agreement `< 0.01%`).
 
 ---
 
@@ -31,7 +35,7 @@
 
 ## Remaining Tasks
 - [x] **Phase 3 (Rust/WASM Engine)**: Complete (`cargo test` 22/22 passed, `wasm-pack` 264K).
-- [ ] **Phase 5 (Python Analytics & Optimization Service)**: Implement full `/api/v1/analytics/evaluate`, `/api/v1/scenarios/compare`, `/api/v1/optimization/run`, `Dockerfile`, and `API-01..07` pytest suite.
+- [x] **Phase 5 (Python Analytics & Optimization Service)**: Complete (`pytest` 8/8 passed, `ruff check .` clean).
 - [ ] **Phase 2 (Core 3D Workcell)**: Implement interactive 3D R3F workcell (`robot-arm`, `gripper`, `input-conveyor`, `output-conveyor`, `processing-station`, `workpiece`, `robot-pedestal`, `safety-fence`, `estop-station`, `sensor-array`), camera presets, selection/isolation, exploded view, collision wireframes, and 6-joint inspector.
 - [ ] **Phase 4 (Simulation Lab & Worker Bridge)**: Implement `simulation.worker.ts`, Zustand simulation store, `useFrame` zero-re-render pose sync, `Overview` live showcase, and full `Simulation Lab` controls/telemetry.
 - [ ] **Phase 6 (Performance Analytics & Optimization Center UI)**: Implement `apiClient.ts`, `Performance Analytics` KPIs/charts/enrichment, `Optimization Center`, and graceful `Backend Unavailable` mode.
@@ -45,3 +49,4 @@
 |---|---|---|
 | `9da427b` | `chore: configure repository gitignore and untrack .DS_Store` | Pushed to `origin/main` |
 | `c7b3217` | `feat: initialize canonical configs and Phase 1 full-stack scaffold` | Pushed to `origin/main` |
+| `565fb74` | `feat(engine): implement deterministic Rust/WASM robotics engine and golden baseline` | Pushed to `origin/main` |
