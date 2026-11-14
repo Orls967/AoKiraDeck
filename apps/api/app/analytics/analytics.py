@@ -150,6 +150,9 @@ def evaluate_run_analytics(req: AnalyticsEvaluateRequest) -> AnalyticsEvaluateRe
             ):
                 # Final return-to-home quintic segment ends with 1 zero-velocity tick at tau=1.0
                 total_robot_active_ms += span - timestep
+            elif idx + 1 == len(stage_entries) and span > 0:
+                # Snapshot captured mid-return-to-home before reaching IDLE
+                total_robot_active_ms += span
             continue
 
         if stage not in MOTION_STAGES:

@@ -42,9 +42,8 @@ export function AnalyticsPage() {
   const evaluateRun = useAnalyticsStore((s) => s.evaluateRun);
 
   const hasRunData =
-    events.length > 0 ||
-    (metrics?.totalUnitsProduced ?? 0) > 0 ||
-    (snapshot?.simTimeMs ?? 0) > 0;
+    (metrics?.totalSimTimeMs ?? snapshot?.simTimeMs ?? 0) > 0 ||
+    (metrics?.totalUnitsProduced ?? 0) > 0;
 
   const triggerBackendEvaluation = () => {
     if (!hasRunData || events.length === 0) {
@@ -314,9 +313,9 @@ export function AnalyticsPage() {
                         }}
                       />
                       <Legend wrapperStyle={{ fontSize: '11px' }} />
-                      <Bar dataKey="robotMoveMs" stackId="a" name="Robot Motion" fill="#36C5D9" />
-                      <Bar dataKey="processDwellMs" stackId="a" name="Process Dwell" fill="#22C55E" />
-                      <Bar dataKey="waitTimeMs" stackId="a" name="Wait/Idle" fill="#F59E0B" />
+                      <Bar isAnimationActive={false} dataKey="robotMoveMs" stackId="a" name="Robot Motion" fill="#36C5D9" />
+                      <Bar isAnimationActive={false} dataKey="processDwellMs" stackId="a" name="Process Dwell" fill="#22C55E" />
+                      <Bar isAnimationActive={false} dataKey="waitTimeMs" stackId="a" name="Wait/Idle" fill="#F59E0B" />
                     </BarChart>
                   </ResponsiveContainer>
                 )}
@@ -350,6 +349,7 @@ export function AnalyticsPage() {
                         }}
                       />
                       <Area
+                        isAnimationActive={false}
                         type="monotone"
                         dataKey="throughputUph"
                         name="Throughput (u/h)"
@@ -384,7 +384,7 @@ export function AnalyticsPage() {
                         fontSize: '11px',
                       }}
                     />
-                    <Bar dataKey="seconds" name="Duration (s)" fill="#36C5D9" radius={[0, 4, 4, 0]} />
+                    <Bar isAnimationActive={false} dataKey="seconds" name="Duration (s)" fill="#36C5D9" radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

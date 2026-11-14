@@ -574,8 +574,9 @@ export function OptimizationPage() {
                         }}
                       />
                       <Legend wrapperStyle={{ fontSize: '11px' }} />
-                      <Bar dataKey="throughput" name="Throughput (u/h)" fill="#36C5D9" />
+                      <Bar isAnimationActive={false} dataKey="throughput" name="Throughput (u/h)" fill="#36C5D9" />
                       <Bar
+                        isAnimationActive={false}
                         dataKey="energyX100"
                         name="Energy (cWh = Wh x 100)"
                         fill="#F59E0B"

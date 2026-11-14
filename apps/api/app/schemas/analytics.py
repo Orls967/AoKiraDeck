@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import Field
+from pydantic import AliasChoices, Field
 
 from app.schemas.common import (
     CamelModel,
@@ -49,7 +49,15 @@ class ConsistencyValidation(CamelModel):
 
 class ForecastSummary(CamelModel):
     projected_units_per_hour: float = Field(ge=0.0)
-    projected_units_per8h_shift: float = Field(ge=0.0)
+    projected_units_per8h_shift: float = Field(
+        ge=0.0,
+        serialization_alias="projectedUnitsPer8hShift",
+        validation_alias=AliasChoices(
+            "projectedUnitsPer8hShift",
+            "projectedUnitsPer8HShift",
+            "projected_units_per8h_shift",
+        ),
+    )
     target_attainment_pct: float = Field(ge=0.0)
 
 

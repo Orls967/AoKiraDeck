@@ -193,8 +193,10 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
             }
 
             set((prev) => {
-              const combined =
-                newEvents.length > 0
+              const isResetFrame = snapshot.simTimeMs === 0 && snapshot.runStatus === 'READY';
+              const combined = isResetFrame
+                ? []
+                : newEvents.length > 0
                   ? [...prev.events, ...newEvents].slice(-MAX_EVENT_LOG)
                   : prev.events;
               return {

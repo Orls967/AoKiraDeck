@@ -90,6 +90,8 @@ def test_api_02_analytics_evaluate_golden_parity() -> None:
     assert body["validation"]["monotonicEventsOk"] is True
     assert body["validation"]["clientServerDeltaPct"] is not None
     assert body["validation"]["clientServerDeltaPct"] < 0.01
+    assert "projectedUnitsPer8hShift" in body["forecast"]
+    assert "projectedUnitsPer8HShift" not in body["forecast"]
 
 
 def test_api_03_analytics_invalid_inputs_rejected() -> None:
