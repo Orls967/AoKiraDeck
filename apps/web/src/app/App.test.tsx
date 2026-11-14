@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { AppRoutes } from '@/app/App';
 import { COMPONENT_REGISTRY, WORKCELL_CONFIG } from '@/config/workcell';
 import { PRESET_SCENARIOS } from '@/config/scenarios';
 
 describe('Phase 1 Foundation & Shell', () => {
-  it('renders persistent navigation across all 5 routes', () => {
+  it('renders persistent navigation across all 5 routes', async () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <AppRoutes />
@@ -21,6 +21,10 @@ describe('Phase 1 Foundation & Shell', () => {
     expect(screen.getByRole('link', { name: /03 Simulation Lab/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /04 Performance Analytics/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /05 Optimization Center/i })).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText(/API Offline/i)).toBeInTheDocument();
+    });
   });
 
   it('loads canonical workcell JSON and all 10 components + 4 scenarios', () => {

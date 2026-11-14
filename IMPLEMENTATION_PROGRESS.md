@@ -1,6 +1,6 @@
 # AoKira — Implementation Progress Tracker
 
-**Current Phase:** Phase 4 Complete -> Starting Phase 6 (Performance Analytics & Optimization UI)
+**Current Phase:** Phase 6 Complete -> Starting Phase 7 (Playwright E2E & Performance Baselines)
 **Last Updated:** 2026-11-15
 **Branch:** `main`
 **Remote:** `https://github.com/Orls967/AoKira.git`
@@ -27,11 +27,15 @@
   - Implemented offline R3F 3D scene modules under `apps/web/src/components/scene/` (`RobotArmModel`, `GripperModel`, `ConveyorModels`, `ProcessingStationModel`, `WorkpieceMeshes`, `EnvironmentRig` with reach envelope/collision wireframes/frames/TCP trace, `CameraRig`, `WorkcellCanvas`, `CameraPresetBar`).
   - Implemented `DigitalTwinPage.tsx` (Component Tree with Isolate/Hide, Exploded View slider, overlay toggles, 6-Joint FK inspector J1–J6, Cartesian IK Target Probe) and `DigitalTwinPage.test.tsx` (`FE-02`), wired worker initialization in `App.tsx`.
   - Verified `npm run typecheck`, `npm run test` (3 files, 6 passed), and `npm run build`.
-- [x] **Phase 4 — Overview Live Showcase & Simulation Lab**:
+- [x] **Phase 4 — Overview Live Showcase & Simulation Lab (`6caa45e`)**:
   - Added deterministic `playbackSpeed` (`0.25x`–`4.0x`) multiplier to `useSimulationStore` (`20 ms` fixed WASM steps preserved) and `compact` mode on `CameraPresetBar`.
   - Implemented `OverviewPage.tsx` (full-bleed hero 3D viewport with `autoOrbit`, editorial launch card, live telemetry HUD synced to Rust/WASM ticks, auto-starting demo showcase that cleanly resets when navigating to interactive routes).
   - Implemented `SimulationLabPage.tsx` (Transport deck `Start`/`Pause`/`Resume`/`Stop`/`Step 20ms`/`Reset`/`E-Stop`, playback speeds, Scenario `A–D` selector, `SINGLE`/`FIXED_COUNT`/`CONTINUOUS` modes, parameter sliders, manual gripper toggle, 8-stage pipeline stepper, Active Fault banner, color-coded filterable Event Log, keyboard shortcuts) and `SimulationLabPage.test.tsx` (`FE-01`).
   - Verified `npm run typecheck`, `npm run test` (4 files, 8 passed), and `npm run build`.
+- [x] **Phase 6 — Performance Analytics & Optimization Center UI**:
+  - Implemented `apps/web/src/services/apiClient.ts` (strict `3s`/`10s`/`20s` AbortController timeouts, structured `ApiDomainError` & `BackendUnavailableError`) and `useAnalyticsStore.ts` (health polling, `/analytics/evaluate`, `/scenarios/compare`, `/optimization/run`), wired into `App.tsx` -> `<AppShell>`.
+  - Implemented `AnalyticsPage.tsx` (zero-data empty state `FE-03`, 10 event-derived KPIs, 3 Recharts charts, Python bottleneck/energy/forecast/consistency enrichment panels, offline degraded mode `FE-04` with `Retry Connection`) and `OptimizationPage.tsx` (scenario comparison table/chart, bounds & constraints workbench, SLSQP recommendation card + `Load into Simulation Lab`, `INFEASIBLE_OPTIMIZATION` banner).
+  - Verified full `scripts/test-all.sh`: Rust `22 passed`, Python `8 passed` + `ruff check .` clean, Web `6 test files / 13 tests passed` (`FE-01..FE-05`), and production `vite build`.
 
 ---
 
@@ -48,7 +52,7 @@
 - [x] **Phase 5 (Python Analytics & Optimization Service)**: Complete (`pytest` 8/8 passed, `ruff check .` clean).
 - [x] **Phase 2 (Core 3D Workcell)**: Complete (R3F workcell, WASM Worker bridge, `DigitalTwinPage` `FE-02` passing).
 - [x] **Phase 4 (Simulation Lab & Overview Showcase)**: Complete (`OverviewPage`, `SimulationLabPage`, `FE-01`, `npm test` 8/8 passing).
-- [ ] **Phase 6 (Performance Analytics & Optimization Center UI)**: Implement `apiClient.ts`, `Performance Analytics` KPIs/charts/enrichment, `Optimization Center`, and graceful `Backend Unavailable` mode.
+- [x] **Phase 6 (Performance Analytics & Optimization Center UI)**: Complete (`apiClient`, `AnalyticsPage`, `OptimizationPage`, `FE-01..FE-05`, `scripts/test-all.sh` green).
 - [ ] **Phase 7 (Testing & Performance Baseline)**: Run Playwright E2E (`E2E-01`..`E2E-05` desktop & mobile), measure empirical runtime/build baselines, resolve any defects.
 - [ ] **Phase 8 (CI/CD & Final Delivery)**: Add `.github/workflows/ci-deploy.yml`, verify Docker & build configs, update `README.md`, push final commits, produce Final Report.
 
@@ -62,3 +66,4 @@
 | `565fb74` | `feat(engine): implement deterministic Rust/WASM robotics engine and golden baseline` | Pushed to `origin/main` |
 | `a0668f0` | `feat(api): implement FastAPI analytics and SciPy SLSQP optimization service` | Pushed to `origin/main` |
 | `cb8dd13` | `feat(web): implement R3F 3D workcell, WASM worker bridge, and Digital Twin inspector` | Pushed to `origin/main` |
+| `6caa45e` | `feat(web): implement Overview live showcase and Simulation Lab control deck` | Pushed to `origin/main` |
