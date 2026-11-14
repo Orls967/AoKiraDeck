@@ -23,12 +23,12 @@
 
 | Component ID | Position / Bounds (`m`) | Key Elevation / Target (`m`) | Notes |
 |---|---|---|---|
-| `robot-pedestal` | Center `(0.000, 0.225, 0.000)`, cylinder radius `0.220`, height `0.450` | Top flange `y = 0.450` | Fixed static obstacle. |
+| `robot-pedestal` | Center `(0.000, 0.225, 0.000)`, cylinder radius `0.220`, height `0.450` | Top flange `y = 0.450` | Visual beveled cylinder; collision uses `BoxVolume` (`halfExtents: [0.220, 0.225, 0.220]`). |
 | `input-conveyor` | `x ∈ [-1.460, -0.460]`, `z ∈ [-0.040, +0.200]`, belt box `y ∈ [0.620, 0.720]` | Belt top `y = 0.720`; Spawn `(-1.380, 0.750, +0.080)`; Pick `(-0.560, 0.750, +0.080)` | Flow along `+X_w`. |
 | `output-conveyor` | `x ∈ [+0.460, +1.460]`, `z ∈ [-0.040, +0.200]`, belt box `y ∈ [0.620, 0.720]` | Belt top `y = 0.720`; Place `(+0.560, 0.750, +0.080)`; Despawn `x >= +1.400` | Flow along `+X_w`. |
 | `processing-station` | `x ∈ [-0.200, +0.200]`, `z ∈ [-0.740, -0.380]`, table `y ∈ [0.000, 0.720]` | Fixture top `y = 0.720`; Workpiece center `(0.000, 0.750, -0.560)` | Rear scanner head sits at `z = -0.710, y = 0.880` (`150 mm` behind TCP) with side clamp jaws along `±Z` opening to `±0.065` for unobstructed vertical robot entry. |
 | `workpiece` | Cube `0.060 x 0.060 x 0.060`, mass `1.20 kg` default (limit `5.0 kg`) | Resting center `+0.030` above belt/fixture (`y = 0.750`) | Synthetic rigid cuboid. |
-| `safety-fence` | Perimeter walls at `x = ±1.600`, `z = ±1.200`, height `1.450` | Conveyor pass-through ports at `z ∈ [-0.180, +0.180]`, `y ∈ [0.720, 1.070]` | Static collision boundary. |
+| `safety-fence` | Perimeter walls at `x = ±1.600`, `z = ±1.200`, height `1.450` | Conveyor pass-through cutouts at `z ∈ [-0.180, +0.180]`, `y ∈ [0.720, 1.070]` | Modeled as split `BoxVolume` wall segments leaving conveyor pass-throughs unobstructed. |
 | `estop-station` | Outside fence at `(+1.720, 0.525, +1.050)` | Height `1.050` | Selectable & interactive emergency stop trigger. |
 | `sensor-array` | Input `(-0.560, 0.750, +0.210)`, Station `(0.000, 0.750, -0.440)`, Output `(+0.560, 0.750, +0.210)`, Beacon `(+1.540, 1.520, -1.140)` | — | Visual optical beam & RGBY state tower. |
 
@@ -86,7 +86,7 @@ $$T_i(q_i) = R_z(\theta_i)\, T_z(d_i)\, T_x(a_i)\, R_x(\alpha_i)$$
 ## 3. Motion Planning & Trajectory Interpolation
 
 ### 3.1 Waypoint & Approach Philosophy
-Pick, place, and station transfers never command direct diagonal sweeps across obstacles. Every station interaction uses safe vertical hover waypoints (`+0.140 m` above target center):
+Pick, place, and station transfers never command direct diagonal sweeps across obstacles. Every station interaction uses safe vertical hover waypoints (`+0.140 m` above target center) with the gripper jaws aligned to open along `Y_6` (`+X_w` at `q1 = 0°`, perpendicular to the Processing Station's `±Z_w` side clamps) and tool approach `+Z_6` pointing vertically downward (`-Y_w` in `WorldFrame`, equivalent to `Home` orientation `R_tcp`):
 - **Input Hover**: `(-0.560, 0.890, +0.080)` -> **Input Pick**: `(-0.560, 0.750, +0.080)`
 - **Station Hover**: `(0.000, 0.890, -0.560)` -> **Station Place/Pick**: `(0.000, 0.750, -0.560)`
 - **Output Hover**: `(+0.560, 0.890, +0.080)` -> **Output Place**: `(+0.560, 0.750, +0.080)`

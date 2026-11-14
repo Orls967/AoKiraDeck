@@ -174,3 +174,14 @@ Every criterion below is mandatory prior to final delivery and maps directly to 
 | **AC-16** | Layout remains usable across desktop and responsive mobile/tablet viewports. | Frontend / E2E |
 | **AC-17** | `prefers-reduced-motion` behavior and a non-crashing WebGL fallback view are implemented and verified. | Frontend / E2E |
 | **AC-18** | Production build, automated test suites across TS/Rust/Python, and GitHub Pages + Docker deployment verification pass. | CI / Delivery Gate |
+
+---
+
+## 9. Decision Governance: Locked vs. Defaults vs. Assumptions vs. Open Questions
+
+| Classification | Decisions Covered | Authority / Review Rule |
+|---|---|---|
+| **Locked Decisions** | Brand identity (`AoKira`), simulation-only boundary, 5 routes, 10 workcell components, generic 6-axis arm, 8-stage cycle, 3-tier `TypeScript/R3F + Rust/WASM + Python/FastAPI` split, `#0B0F14`–`#EF4444` color system, GitHub Pages + container backend topology, `AC-01`–`AC-18` | Immutable without explicit user approval ([constraints.md](file:///Users/orl123456/Documents/AoKira/constraints.md)). |
+| **Reasonable Implementation Defaults** | DH link dimensions & joint limits (`SIMULATION_SPEC.md`), workcell world coordinates, DLS `lambda = 0.025` / `maxIterations = 120`, near-collision threshold `25 mm`, `300 ms` gripper actuation, `2500 ms` default dwell, energy model coefficients, HTTP timeouts (`3s`/`10s`/`20s`) | Locked in `DATA_MODEL.md` / `SIMULATION_SPEC.md` / `API_CONTRACT.md` so implementation agents do not guess; tunable via scenario config or documented spec update if calibration requires. |
+| **Engineering Assumptions** | Target users run modern WebAssembly + Web Worker browsers; HTTP analytics payloads remain `<= 5 MB`; single-user browser state does not require server database persistence; CORS allowlist suffices for stateless demo API access | Validated across Phase 4–7 tests. |
+| **Open Decisions (Deferred to Deployment / Phase 7–8)** | (1) Concrete hardware performance baseline numbers measured in Phase 7 (`TEST_PLAN.md` Section 8); (2) Choice of external container hosting provider for `apps/api` (`VITE_API_BASE_URL`) when deploying beyond Docker localhost; (3) Explicit user push/deploy authorization at Phase 8 | Does **not** block Phases 1–7 local implementation, testing, or GitHub Pages prep. |

@@ -292,7 +292,7 @@ export interface OptimizationRunRequest {
   };
   constraints: {
     minThroughputUnitsPerHour: number;        // e.g. 60
-    requireZeroCollisions: true;              // locked true
+    requireZeroCollisions: boolean;           // validated true in v1
     maxEnergyPerUnitWh?: number;
   };
   maxEvaluations?: number;                    // [10, 500], default 120

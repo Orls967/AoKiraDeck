@@ -86,7 +86,7 @@ Top persistent header (`56px` height on desktop) displaying:
 - **Layout**: Full-bleed hero 3D viewport (`min-height: calc(100vh - 56px)`) with floating left editorial/technical intro card and bottom floating live workcell telemetry strip.
 - **Content**:
   - Brand title **`AoKira`** + subtitle *"Industrial Robotic Workcell Digital Twin"* + tagline *"Design. Simulate. Optimize. Operate."*
-  - Live animated manufacturing cycle running smoothly in the 3D scene behind/beside the hero panel.
+  - Live animated manufacturing cycle executed via the Rust/WASM Worker (`Scenario A: Baseline` showcase loop) so displayed showcase metrics derive strictly from genuine simulation ticks rather than fake numbers.
   - System status strip (Engine `Rust/WASM 20ms`, DOF `6-Axis`, Backend status).
   - Live snapshot counters (`Completed Units`, `Active Stage`, `Avg Cycle Time` — synced with engine state).
   - Primary CTAs: **`Open Digital Twin`** (`/digital-twin`) and **`Launch Simulation Lab`** (`/simulation`).
