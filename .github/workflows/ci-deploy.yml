@@ -1,0 +1,216 @@
+name: AoKira CI & GitHub Pages Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  rust-and-wasm:
+    name: Rust Engine & WASM Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Cargo registry & build artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            crates/aokira-engine/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('crates/aokira-engine/Cargo.toml', 'crates/aokira-engine/Cargo.lock') }}
+
+      - name: Install wasm-pack
+        run: |
+          if ! command -v wasm-pack >/dev/null 2>&1; then
+            curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+          fi
+
+      - name: Check Rust formatting
+        working-directory: crates/aokira-engine
+        run: cargo fmt --check
+
+      - name: Run Clippy lints
+        working-directory: crates/aokira-engine
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Run Rust unit & golden regression tests
+        working-directory: crates/aokira-engine
+        run: cargo test
+
+      - name: Build Rust/WASM package
+        run: ./scripts/build-wasm.sh
+
+      - name: Upload generated WASM artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: aokira-wasm
+          path: apps/web/src/wasm
+          if-no-files-found: error
+
+  python-api:
+    name: Python FastAPI Tests & Docker Smoke Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: apps/api/pyproject.toml
+
+      - name: Install FastAPI service & dev dependencies
+        working-directory: apps/api
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Lint Python source (ruff)
+        working-directory: apps/api
+        run: ruff check .
+
+      - name: Run Python API contract tests (pytest)
+        working-directory: apps/api
+        run: pytest
+
+      - name: Build and smoke-test Docker image
+        run: |
+          docker build -t aokira-api:ci apps/api
+          CID=$(docker run -d -p 18000:8000 aokira-api:ci)
+          trap "docker rm -f $CID >/dev/null 2>&1 || true" EXIT
+          for i in $(seq 1 20); do
+            if curl -sf http://127.0.0.1:18000/api/v1/health | grep -q '"status":"ok"'; then
+              echo "Docker health smoke check passed"
+              exit 0
+            fi
+            sleep 0.5
+          done
+          echo "Docker health smoke check failed"
+          docker logs "$CID"
+          exit 1
+
+  web-and-e2e:
+    name: Web Typecheck, Unit Tests, E2E & Pages Bundle
+    needs: [rust-and-wasm, python-api]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download WASM package
+        uses: actions/download-artifact@v4
+        with:
+          name: aokira-wasm
+          path: apps/web/src/wasm
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Set up Python 3.12 for E2E API backend
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: apps/api/pyproject.toml
+
+      - name: Install web dependencies
+        working-directory: apps/web
+        run: npm ci
+
+      - name: Install Python backend dependencies for E2E
+        working-directory: apps/api
+        run: pip install -e .
+
+      - name: Run TypeScript typecheck & Vitest suite
+        working-directory: apps/web
+        run: |
+          npm run typecheck
+          npm run test
+
+      - name: Ensure Google Chrome is available for Playwright
+        working-directory: apps/web
+        run: |
+          if ! command -v google-chrome >/dev/null 2>&1; then
+            npx playwright install chrome
+          fi
+
+      - name: Build E2E bundle & execute Playwright E2E-01..05
+        working-directory: apps/web
+        env:
+          VITE_API_BASE_URL: http://127.0.0.1:8000
+        run: |
+          npm run build
+          (
+            cd ../api
+            uvicorn app.main:app --host 127.0.0.1 --port 8000 >/tmp/api.log 2>&1
+          ) &
+          API_PID=$!
+          npm run preview >/tmp/web.log 2>&1 &
+          WEB_PID=$!
+          cleanup() {
+            kill "$API_PID" "$WEB_PID" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:8000/api/v1/health >/dev/null && curl -sf http://127.0.0.1:4173/ >/dev/null; then
+              break
+            fi
+            sleep 0.5
+          done
+          ./node_modules/.bin/playwright test
+
+      - name: Build GitHub Pages production bundle (/AoKira/)
+        working-directory: apps/web
+        env:
+          VITE_BASE_PATH: /AoKira/
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+        run: |
+          npm run build
+          cp dist/index.html dist/404.html
+
+      - name: Upload GitHub Pages artifact
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/web/dist
+
+  deploy-pages:
+    name: Deploy to GitHub Pages
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: web-and-e2e
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy GitHub Pages site
+        id: deployment
+        uses: actions/deploy-pages@v4

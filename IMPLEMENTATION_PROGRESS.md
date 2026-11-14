@@ -85,3 +85,13 @@
 - **FastAPI `POST /api/v1/optimization/run` (90 SciPy SLSQP evaluations)**: `7.77 ms` (HTTP `200`)
 - **WebGL Canvas rAF Rate (`E2E-01`)**: `60.5 FPS`
 - **Production WASM Binary (`aokira_engine_bg.wasm`)**: `270.35 kB` raw / `108.62 kB` gzip (`vite build` in `2.93s`)
+
+
+- Commit: `50e52ff` (`test(e2e): add Playwright E2E suite, perf benchmarks, and Phase 7 fixes`, pushed to `origin/main`)
+
+## Phase 8: CI/CD Workflow, Production Deployment Prep & Final Docs — DONE
+
+- Created `.github/workflows/ci-deploy.yml` covering `rust-and-wasm` (`fmt`, `clippy`, `test`, `wasm-pack`), `python-api` (`ruff`, `pytest`, Docker build + `/api/v1/health` container smoke test), `web-and-e2e` (`typecheck`, `vitest`, Playwright `E2E-01..05`, and `/AoKira/` Pages build with `404.html` SPA fallback), and `deploy-pages` (`actions/deploy-pages@v4`).
+- Verified YAML workflow validity (`yaml.safe_load` parsed all 4 jobs cleanly) and verified `VITE_BASE_PATH=/AoKira/` production bundle rewrites `/AoKira/` assets, `/AoKira/favicon.svg`, and `/AoKira/assets/aokira_engine_bg-*.wasm`.
+- Checked local Docker availability (`docker info` reported daemon socket unavailable on macOS host; CI enforces Docker image smoke testing on Ubuntu runners).
+- Updated `README.md` with implemented workspace layout, verified local/CI setup commands, measured Phase 7/8 performance baselines, offline/synthetic disclaimers, and deployment guide.

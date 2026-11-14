@@ -4,9 +4,9 @@
 *Interactive 3D Manufacturing Simulation, Robot Motion Planning & Production Optimization Platform*
 Tagline: **Design. Simulate. Optimize. Operate.**
 
-> **Project Phase Notice:** `AoKira` is currently at **Phase 0 (Documentation Lock)**. The Markdown specification package is complete and ready for autonomous phased implementation starting at Phase 1 (see [flow.md](file:///Users/orl123456/Documents/AoKira/flow.md)). Application source directories (`apps/`, `crates/`, `data/`) shown in the target structure below will be created during Phases 1–5.
+> **Project Status:** **Implemented (Phases 1–8 Complete)** — Rust/WASM kinematic & production simulation core (`crates/aokira-engine`), Python/FastAPI analytics & SciPy optimization backend (`apps/api`), interactive React + Three.js/R3F frontend (`apps/web`), Playwright E2E suite, and GitHub Actions CI/Pages deployment workflow (`.github/workflows/ci-deploy.yml`).
 >
-> **Simulation-Only Disclaimer:** `AoKira` is a deterministic synthetic engineering demonstrator. It is **not** physical robot control firmware, PLC/ROS 2 middleware, a certified industrial safety system, or calibrated electrical metering hardware.
+> **Simulation-Only Disclaimer:** `AoKira` is a deterministic synthetic engineering demonstrator. It is **not** physical robot control firmware, PLC/ROS 2 middleware, a certified industrial safety system, or calibrated electrical metering hardware. All energy numbers carry the explicit label: *"Synthetic engineering estimate only; not real electrical metering."*
 
 ---
 
@@ -40,21 +40,26 @@ Browser UI (TypeScript / React / Three.js + React Three Fiber)
 
 ---
 
-## 3. Target Repository Structure
+## 3. Repository Structure
 
-*(Target organization to be scaffolded during Phases 1–5; see [ARCHITECTURE.md](file:///Users/orl123456/Documents/AoKira/ARCHITECTURE.md) for module responsibilities.)*
+*(Implemented workspace layout matching [ARCHITECTURE.md](file:///Users/orl123456/Documents/AoKira/ARCHITECTURE.md).)*
 
 ```text
 AoKira/
+├── .github/workflows/
+│   └── ci-deploy.yml       # Rust/WASM, FastAPI/Docker, Vitest, Playwright E2E & Pages deploy
 ├── apps/
-│   ├── web/                # React + TypeScript + Three.js / R3F frontend & Web Worker
-│   └── api/                # Python FastAPI analytics & optimization service + Dockerfile
+│   ├── web/                # React + TypeScript + Three.js/R3F frontend, Worker & Playwright E2E
+│   └── api/                # Python FastAPI analytics & SciPy optimization service + Dockerfile
 ├── crates/
-│   └── aokira-engine/      # Rust -> WebAssembly simulation core
+│   └── aokira-engine/      # Rust -> WebAssembly simulation core + perf_bench example
 ├── data/
 │   ├── workcell/           # Canonical single-source-of-truth config (aokira-workcell.v1.json)
 │   ├── scenarios/          # Preset Scenarios A-D
 │   └── fixtures/           # Golden deterministic event/test fixtures
+├── scripts/
+│   ├── build-wasm.sh       # Builds WASM artifacts into apps/web/src/wasm
+│   └── test-all.sh         # Unified Rust, Python & Web verification runner
 ├── PRD.md                  # Product requirements & acceptance criteria (AC-01..AC-18)
 ├── ARCHITECTURE.md         # System topology, worker protocol & deployment
 ├── SIMULATION_SPEC.md      # Kinematics (DH/FK/IK), trajectories, collision & state machine
@@ -64,54 +69,81 @@ AoKira/
 ├── TEST_PLAN.md            # Test suites, baseline protocol & AC verification matrix
 ├── flow.md                 # Phased execution roadmap (Phases 0-8)
 ├── constraints.md          # Engineering rules & autonomous agent guardrails
+├── IMPLEMENTATION_PROGRESS.md
 └── README.md               # Project entry point
 ```
 
 ---
 
-## 4. Prerequisites & Planned Commands (Phase 1+)
+## 4. Prerequisites, Setup & Verification Commands
 
 ### Prerequisites
-- **Node.js** `>= 20` and npm/pnpm
+- **Node.js** `>= 20` and `npm`
 - **Rust** stable toolchain + `wasm-pack` (`rustup target add wasm32-unknown-unknown`)
-- **Python** `>= 3.12` (with `uv` or `venv` + `pip`)
-- **Docker** (optional, for containerized API verification)
+- **Python** `>= 3.12` (`venv` + `pip`)
+- **Google Chrome / Playwright** (for WebGL browser E2E verification)
+- **Docker** (optional locally; automated in CI for `apps/api/Dockerfile`)
 
-### Planned Development, Test & Build Workflow
-*(Commands below apply once Phases 1–5 scaffold `crates/aokira-engine`, `apps/web`, and `apps/api` as specified in [flow.md](file:///Users/orl123456/Documents/AoKira/flow.md).)*
+### Local Development, Test & Build Workflow
 
 ```bash
 # 1. Build & test Rust/WASM simulation core
+./scripts/build-wasm.sh
 cd crates/aokira-engine
-cargo test
-cargo clippy --all-targets -- -D warnings
-wasm-pack build --target web --out-dir ../../apps/web/src/wasm
+cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test
+cargo run --release --example perf_bench
 
-# 2. Install & run Python FastAPI analytics service
+# 2. Install, verify & run Python FastAPI analytics service
 cd apps/api
-python -m venv .venv && source .venv/bin/activate
+python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-pytest
+ruff check . && pytest
 uvicorn app.main:app --reload --port 8000
 
-# 3. Install, test & run Web frontend
+# 3. Install, test, build & E2E-verify Web frontend
 cd apps/web
 npm install
-npm run test          # Vitest unit/integration suite
+npm run typecheck
+npm run test          # Vitest unit/component suite (13 tests)
 npm run dev           # Vite local server (http://localhost:5173)
-npm run build         # Production static + WASM bundle (dist/)
+VITE_API_BASE_URL="http://127.0.0.1:8000" npm run build
+npm run test:e2e      # Playwright Chrome WebGL E2E suite (E2E-01..05, requires API + preview)
+
+# 4. Run full unified verification (Rust + Python + Web)
+./scripts/test-all.sh
+
+# 5. Optional Docker image build for FastAPI backend
+docker build -t aokira-api apps/api
+docker run -p 8000:8000 aokira-api
 ```
 
 ---
 
 ## 5. Deployment Overview
 
-- **Frontend + Rust/WASM**: Automated build via GitHub Actions deploying `apps/web/dist` (with `VITE_BASE_PATH=/AoKira/`) to **GitHub Pages** (`https://orls967.github.io/AoKira/`).
-- **Python Analytics Service**: Built from `apps/api/Dockerfile` and deployed to a standalone container host configured via `VITE_API_BASE_URL` (CORS restricted to local dev and GitHub Pages origins). When `VITE_API_BASE_URL` is unset or unreachable, the browser application operates cleanly in offline local-simulation mode.
+- **Frontend + Rust/WASM**: Automated build via [ci-deploy.yml](file:///Users/orl123456/Documents/AoKira/.github/workflows/ci-deploy.yml) deploying `apps/web/dist` (built with `VITE_BASE_PATH=/AoKira/` and `404.html` SPA route fallback) to **GitHub Pages** (`https://orls967.github.io/AoKira/`).
+- **Python Analytics Service**: Built from [Dockerfile](file:///Users/orl123456/Documents/AoKira/apps/api/Dockerfile) and configured in GitHub repository variable `VITE_API_BASE_URL` (CORS restricted to local dev and GitHub Pages origins). When `VITE_API_BASE_URL` is unset or unreachable, the browser application automatically operates in full offline Rust/WASM mode with explicit UI badges (`API Offline`).
 
 ---
 
-## 6. Documentation Index (Canonical Sources of Truth)
+## 6. Verified Test Suites & Measured Performance Baselines
+
+| Suite / Metric | Measured Result |
+|---|---|
+| **Rust Engine (`cargo test`)** | `22 passed, 0 failed` (`clippy -D warnings` & `fmt --check` clean) |
+| **Python FastAPI (`pytest`)** | `8 passed, 0 failed` (`ruff check .` clean) |
+| **Web Frontend (`vitest run`)** | `6 files / 13 passed` (`tsc --noEmit` clean) |
+| **Playwright E2E (`E2E-01`–`E2E-05`)** | `5 passed` (real Chrome WebGL + Uvicorn backend) |
+| **Rust 1,000 Ticks (`perf_bench --release`)** | `22.917 ms` total (`0.0229 ms/tick`) |
+| **Rust 3-Seed DLS IK (`perf_bench --release`)** | `0.0133 ms` avg / `0.0148 ms` worst (reachable); `0.0013 ms` unreachable reject |
+| **FastAPI `/api/v1/analytics/evaluate` (1,000 events)** | `22.61 ms` (HTTP `200`) |
+| **FastAPI `/api/v1/optimization/run` (90 evals)** | `7.77 ms` (HTTP `200`) |
+| **WebGL Canvas rAF Frame Rate (`E2E-01`)** | `60.5 FPS` |
+| **WASM Production Binary (`aokira_engine_bg.wasm`)** | `270.35 kB` raw / `108.62 kB` gzip (`vite build` in `2.93s`) |
+
+---
+
+## 7. Documentation Index (Canonical Sources of Truth)
 
 | Document | Canonical Authority For |
 |---|---|
@@ -127,8 +159,8 @@ npm run build         # Production static + WASM bundle (dist/)
 
 ---
 
-## 7. Known Limitations
+## 8. Known Limitations
 
 1. **Synthetic Physics & Energy**: Conveyor transport, rigid grasp attachment, capsule/box collision checking, and power estimates are simplified demonstrator models — not full rigid-body physics, CAD mesh-exact contact, or calibrated industrial metering.
-2. **Pre-Implementation Status**: Only Phase 0 documentation exists in this repository at present; no application runtime code or measured benchmarks exist yet.
-3. **Stateless API**: No user accounts, cloud persistence, or multi-user collaboration exist in this release.
+2. **Stateless API**: No user accounts, database persistence, or multi-user collaboration exist in this release.
+3. **Container Runtime Environment**: `apps/api/Dockerfile` includes a non-root Python 3.12 runtime and `/api/v1/health` check verified in CI (`.github/workflows/ci-deploy.yml`), while local macOS verification had `/usr/local/bin/docker` installed without an active Docker Desktop daemon socket.
