@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AppShell } from '@/components/AppShell';
 import { OverviewPage } from '@/features/overview/OverviewPage';
@@ -5,10 +6,18 @@ import { DigitalTwinPage } from '@/features/digital-twin/DigitalTwinPage';
 import { SimulationLabPage } from '@/features/simulation/SimulationLabPage';
 import { AnalyticsPage } from '@/features/analytics/AnalyticsPage';
 import { OptimizationPage } from '@/features/optimization/OptimizationPage';
+import { useSimulationStore } from '@/stores/useSimulationStore';
 
 export function AppRoutes() {
+  const initWorker = useSimulationStore((s) => s.initWorker);
+  const workerStatus = useSimulationStore((s) => s.workerStatus);
+
+  useEffect(() => {
+    initWorker();
+  }, [initWorker]);
+
   return (
-    <AppShell>
+    <AppShell workerStatus={workerStatus}>
       <Routes>
         <Route path="/" element={<OverviewPage />} />
         <Route path="/digital-twin" element={<DigitalTwinPage />} />
