@@ -1,6 +1,6 @@
 # AoKira — Implementation Progress Tracker
 
-**Current Phase:** Phase 2 Complete -> Starting Phase 4 (Overview Showcase & Simulation Lab)
+**Current Phase:** Phase 4 Complete -> Starting Phase 6 (Performance Analytics & Optimization UI)
 **Last Updated:** 2026-11-15
 **Branch:** `main`
 **Remote:** `https://github.com/Orls967/AoKira.git`
@@ -22,11 +22,16 @@
   - Implemented Pydantic v2 `camelCase` request/response/error schemas, 5 MB payload cap middleware (`413`), uniform `ApiErrorResponse` error handlers (`VALIDATION_ERROR`, `INVALID_EVENT_SEQUENCE`, `INFEASIBLE_OPTIMIZATION`, `INTERNAL_ERROR`), and CORS headers.
   - Implemented event-driven `analytics.py`, `validation.py`, `energy.py`, `bottleneck.py`, `forecasting.py`, analytical quintic `surrogate.py`, and SciPy SLSQP `optimization.py` (`/api/v1/analytics/evaluate`, `/api/v1/scenarios/compare`, `/api/v1/optimization/run`), plus `apps/api/Dockerfile`.
   - Verified `ruff check .` (0 errors) and `pytest -v` (8 passed: `API-01..07` + smoke check, golden fixture agreement `< 0.01%`).
-- [x] **Phase 2 — Core 3D Workcell, WASM Worker Bridge & Digital Twin Inspector**:
+- [x] **Phase 2 — Core 3D Workcell, WASM Worker Bridge & Digital Twin Inspector (`cb8dd13`)**:
   - Implemented `apps/web/src/workers/simulation.worker.ts` (dedicated Web Worker wrapping `AokiraSimEngine` WASM module), `useSimulationStore` (`liveSnapshotRef` & `liveTracePointsRef` outside React state, `rAF` `20 ms` tick accumulator capped at `200 ms`, rolling 500-event log, Promise-based `solveIk`), and `useTwinUiStore`.
   - Implemented offline R3F 3D scene modules under `apps/web/src/components/scene/` (`RobotArmModel`, `GripperModel`, `ConveyorModels`, `ProcessingStationModel`, `WorkpieceMeshes`, `EnvironmentRig` with reach envelope/collision wireframes/frames/TCP trace, `CameraRig`, `WorkcellCanvas`, `CameraPresetBar`).
   - Implemented `DigitalTwinPage.tsx` (Component Tree with Isolate/Hide, Exploded View slider, overlay toggles, 6-Joint FK inspector J1–J6, Cartesian IK Target Probe) and `DigitalTwinPage.test.tsx` (`FE-02`), wired worker initialization in `App.tsx`.
   - Verified `npm run typecheck`, `npm run test` (3 files, 6 passed), and `npm run build`.
+- [x] **Phase 4 — Overview Live Showcase & Simulation Lab**:
+  - Added deterministic `playbackSpeed` (`0.25x`–`4.0x`) multiplier to `useSimulationStore` (`20 ms` fixed WASM steps preserved) and `compact` mode on `CameraPresetBar`.
+  - Implemented `OverviewPage.tsx` (full-bleed hero 3D viewport with `autoOrbit`, editorial launch card, live telemetry HUD synced to Rust/WASM ticks, auto-starting demo showcase that cleanly resets when navigating to interactive routes).
+  - Implemented `SimulationLabPage.tsx` (Transport deck `Start`/`Pause`/`Resume`/`Stop`/`Step 20ms`/`Reset`/`E-Stop`, playback speeds, Scenario `A–D` selector, `SINGLE`/`FIXED_COUNT`/`CONTINUOUS` modes, parameter sliders, manual gripper toggle, 8-stage pipeline stepper, Active Fault banner, color-coded filterable Event Log, keyboard shortcuts) and `SimulationLabPage.test.tsx` (`FE-01`).
+  - Verified `npm run typecheck`, `npm run test` (4 files, 8 passed), and `npm run build`.
 
 ---
 
@@ -42,7 +47,7 @@
 - [x] **Phase 3 (Rust/WASM Engine)**: Complete (`cargo test` 22/22 passed, `wasm-pack` 264K).
 - [x] **Phase 5 (Python Analytics & Optimization Service)**: Complete (`pytest` 8/8 passed, `ruff check .` clean).
 - [x] **Phase 2 (Core 3D Workcell)**: Complete (R3F workcell, WASM Worker bridge, `DigitalTwinPage` `FE-02` passing).
-- [ ] **Phase 4 (Simulation Lab & Overview Showcase)**: Implement `OverviewPage` live auto-demo showcase & HUD and full `SimulationLabPage` transport/parameter controls, 8-stage stepper, fault injection, event log, and `FE-01`.
+- [x] **Phase 4 (Simulation Lab & Overview Showcase)**: Complete (`OverviewPage`, `SimulationLabPage`, `FE-01`, `npm test` 8/8 passing).
 - [ ] **Phase 6 (Performance Analytics & Optimization Center UI)**: Implement `apiClient.ts`, `Performance Analytics` KPIs/charts/enrichment, `Optimization Center`, and graceful `Backend Unavailable` mode.
 - [ ] **Phase 7 (Testing & Performance Baseline)**: Run Playwright E2E (`E2E-01`..`E2E-05` desktop & mobile), measure empirical runtime/build baselines, resolve any defects.
 - [ ] **Phase 8 (CI/CD & Final Delivery)**: Add `.github/workflows/ci-deploy.yml`, verify Docker & build configs, update `README.md`, push final commits, produce Final Report.
@@ -56,3 +61,4 @@
 | `c7b3217` | `feat: initialize canonical configs and Phase 1 full-stack scaffold` | Pushed to `origin/main` |
 | `565fb74` | `feat(engine): implement deterministic Rust/WASM robotics engine and golden baseline` | Pushed to `origin/main` |
 | `a0668f0` | `feat(api): implement FastAPI analytics and SciPy SLSQP optimization service` | Pushed to `origin/main` |
+| `cb8dd13` | `feat(web): implement R3F 3D workcell, WASM worker bridge, and Digital Twin inspector` | Pushed to `origin/main` |

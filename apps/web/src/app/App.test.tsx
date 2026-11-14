@@ -13,7 +13,8 @@ describe('Phase 1 Foundation & Shell', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByText('AoKira')).toBeInTheDocument();
+    expect(screen.getAllByText('AoKira').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByRole('heading', { name: 'AoKira', level: 1 })).toBeInTheDocument();
     expect(screen.getByText('SIMULATION ONLY')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /01 Overview/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /02 Digital Twin/i })).toBeInTheDocument();

@@ -43,12 +43,14 @@ interface SimulationStoreState {
   engineVersion: string | null;
   workerError: string | null;
   activeScenario: ScenarioConfig;
+  playbackSpeed: number;
   snapshot: SimulationSnapshot | null;
   events: SimulationEvent[];
   metrics: ProductionMetrics | null;
   lastIkResult: IkSolveOutcome | null;
 
   initWorker: () => void;
+  setPlaybackSpeed: (speed: number) => void;
   loadScenario: (scenario: ScenarioConfig) => void;
   sendCommand: (action: WorkerAction) => void;
   stepSingleTick: () => void;
@@ -114,15 +116,17 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       const rawDt = now - lastFrameTimeMs;
       lastFrameTimeMs = now;
       const clampedDt = Math.max(0, Math.min(rawDt, MAX_FRAME_DT_MS));
-      accumulatorMs += clampedDt;
+      const speed = Math.max(0.25, Math.min(4.0, state.playbackSpeed));
+      accumulatorMs += clampedDt * speed;
 
       const ticksReady = Math.floor(accumulatorMs / FIXED_TIMESTEP_MS);
       if (ticksReady > 0 && !inFlightStep) {
-        accumulatorMs -= ticksReady * FIXED_TIMESTEP_MS;
+        const batch = Math.min(ticksReady, 20);
+        accumulatorMs -= batch * FIXED_TIMESTEP_MS;
         inFlightStep = true;
         postToWorker({
           type: 'STEP_TICKS',
-          payload: { tickCount: Math.min(ticksReady, 10) },
+          payload: { tickCount: batch },
         });
       }
       rafId = requestAnimationFrame(tickFrame);
@@ -135,6 +139,7 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
     engineVersion: null,
     workerError: null,
     activeScenario: DEFAULT_SCENARIO,
+    playbackSpeed: 1,
     snapshot: null,
     events: [],
     metrics: null,
@@ -245,6 +250,11 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
         });
       }
     },
+
+    setPlaybackSpeed: (speed) =>
+      set({
+        playbackSpeed: Number(Math.max(0.25, Math.min(4.0, speed)).toFixed(2)),
+      }),
 
     loadScenario: (scenario) => {
       stopLoop();

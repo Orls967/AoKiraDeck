@@ -10,7 +10,11 @@ const PRESET_ORDER: { id: CameraPreset; shortcut: string }[] = [
   { id: 'TOP', shortcut: '4' },
 ];
 
-export function CameraPresetBar() {
+interface CameraPresetBarProps {
+  compact?: boolean;
+}
+
+export function CameraPresetBar({ compact = false }: CameraPresetBarProps) {
   const cameraPreset = useTwinUiStore((s) => s.cameraPreset);
   const setCameraPreset = useTwinUiStore((s) => s.setCameraPreset);
 
@@ -49,13 +53,15 @@ export function CameraPresetBar() {
             type="button"
             onClick={() => setCameraPreset(id)}
             aria-pressed={active}
-            className={`rounded px-2 py-1 font-mono text-[11px] transition-colors ${
+            className={`rounded font-mono transition-colors ${
+              compact ? 'px-1.5 py-0.5 text-[10px]' : 'px-2 py-1 text-[11px]'
+            } ${
               active
                 ? 'bg-[#36C5D9]/20 text-[#36C5D9] ring-1 ring-[#36C5D9]/40'
                 : 'text-[#94A3B8] hover:bg-[#1C2631] hover:text-[#F1F5F9]'
             }`}
           >
-            <span className="mr-1 text-[#64748B]">{shortcut}</span>
+            {!compact && <span className="mr-1 text-[#64748B]">{shortcut}</span>}
             {CAMERA_PRESETS[id].label}
           </button>
         );
