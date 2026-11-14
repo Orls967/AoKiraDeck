@@ -1,0 +1,965 @@
+{
+  "scenario": {
+    "scenarioId": "baseline-a",
+    "name": "Scenario A: Baseline",
+    "description": "Canonical default workcell operating parameters (1.0x robot speed, 0.20 m/s conveyors, 2500 ms process dwell).",
+    "seed": 42,
+    "timestepMs": 20,
+    "cycleMode": "FIXED_COUNT",
+    "targetQuantity": 3,
+    "targetProductionRatePerHour": 60.0,
+    "robotSpeedScale": 1.0,
+    "robotAccelScale": 1.0,
+    "inputConveyorSpeedMps": 0.2,
+    "outputConveyorSpeedMps": 0.2,
+    "processingDwellMs": 2500,
+    "workpieceMassKg": 1.2,
+    "trajectorySmoothnessFactor": 1.0
+  },
+  "events": [
+    {
+      "seq": 1,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 0,
+      "eventType": "SIM_RESET",
+      "stage": "IDLE",
+      "cycleIndex": 0,
+      "workpieceId": null,
+      "componentId": null,
+      "severity": "INFO",
+      "message": "Loaded scenario Scenario A: Baseline",
+      "payload": {}
+    },
+    {
+      "seq": 2,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 0,
+      "eventType": "SIM_STARTED",
+      "stage": "IDLE",
+      "cycleIndex": 0,
+      "workpieceId": null,
+      "componentId": null,
+      "severity": "INFO",
+      "message": "Simulation started (Scenario A: Baseline)",
+      "payload": {}
+    },
+    {
+      "seq": 3,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 0,
+      "eventType": "CYCLE_STARTED",
+      "stage": "IDLE",
+      "cycleIndex": 1,
+      "workpieceId": null,
+      "componentId": null,
+      "severity": "INFO",
+      "message": "Cycle 1 started",
+      "payload": {}
+    },
+    {
+      "seq": 4,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 0,
+      "eventType": "STAGE_ENTERED",
+      "stage": "DETECT_OBJECT",
+      "cycleIndex": 1,
+      "workpieceId": null,
+      "componentId": "input-conveyor",
+      "severity": "INFO",
+      "message": "Waiting for workpiece at input pick zone",
+      "payload": {}
+    },
+    {
+      "seq": 5,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 20,
+      "eventType": "WORKPIECE_SPAWNED",
+      "stage": "DETECT_OBJECT",
+      "cycleIndex": 1,
+      "workpieceId": "WP-0001",
+      "componentId": "input-conveyor",
+      "severity": "INFO",
+      "message": "Spawned workpiece WP-0001 on input conveyor",
+      "payload": {}
+    },
+    {
+      "seq": 6,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 1120,
+      "eventType": "WORKPIECE_SPAWNED",
+      "stage": "DETECT_OBJECT",
+      "cycleIndex": 1,
+      "workpieceId": "WP-0002",
+      "componentId": "input-conveyor",
+      "severity": "INFO",
+      "message": "Spawned workpiece WP-0002 on input conveyor",
+      "payload": {}
+    },
+    {
+      "seq": 7,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 2220,
+      "eventType": "WORKPIECE_SPAWNED",
+      "stage": "DETECT_OBJECT",
+      "cycleIndex": 1,
+      "workpieceId": "WP-0003",
+      "componentId": "input-conveyor",
+      "severity": "INFO",
+      "message": "Spawned workpiece WP-0003 on input conveyor",
+      "payload": {}
+    },
+    {
+      "seq": 8,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 4100,
+      "eventType": "STAGE_ENTERED",
+      "stage": "APPROACH_PICK",
+      "cycleIndex": 1,
+      "workpieceId": "WP-0001",
+      "componentId": "robot-arm",
+      "severity": "INFO",
+      "message": "Workpiece WP-0001 ready; approaching pick hover",
+      "payload": {}
+    },
+    {
+      "seq": 9,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 5240,
+      "eventType": "STAGE_ENTERED",
+      "stage": "PICK_WORKPIECE",
+      "cycleIndex": 1,
+      "workpieceId": "WP-0001",
+      "componentId": "gripper",
+      "severity": "INFO",
+      "message": "Descending to grasp workpiece from input belt",
+      "payload": {}
+    },
+    {
+      "seq": 10,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 5980,
+      "eventType": "GRIPPER_GRASPED",
+      "stage": "PICK_WORKPIECE",
+      "cycleIndex": 1,
+      "workpieceId": "WP-0001",
+      "componentId": "gripper",
+      "severity": "INFO",
+      "message": "Gripper clamped WP-0001",
+      "payload": {}
+    },
+    {
+      "seq": 11,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 6420,
+      "eventType": "STAGE_ENTERED",
+      "stage": "TRANSFER_TO_STATION",
+      "cycleIndex": 1,
+      "workpieceId": "WP-0001",
+      "componentId": "robot-arm",
+      "severity": "INFO",
+      "message": "Transferring workpiece to processing station approach",
+      "payload": {}
+    },
+    {
+      "seq": 12,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 7560,
+      "eventType": "STAGE_ENTERED",
+      "stage": "PROCESS_WORKPIECE",
+      "cycleIndex": 1,
+      "workpieceId": "WP-0001",
+      "componentId": "processing-station",
+      "severity": "INFO",
+      "message": "Placing workpiece into processing station fixture",
+      "payload": {}
+    },
+    {
+      "seq": 13,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 8300,
+      "eventType": "GRIPPER_RELEASED",
+      "stage": "PROCESS_WORKPIECE",
+      "cycleIndex": 1,
+      "workpieceId": "WP-0001",
+      "componentId": "gripper",
+      "severity": "INFO",
+      "message": "Released workpiece at processing station",
+      "payload": {}
+    },
+    {
+      "seq": 14,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 11240,
+      "eventType": "STAGE_ENTERED",
+      "stage": "PICK_FINISHED",
+      "cycleIndex": 1,
+      "workpieceId": "WP-0001",
+      "componentId": "gripper",
+      "severity": "INFO",
+      "message": "Processing finished; descending to pick finished part",
+      "payload": {}
+    },
+    {
+      "seq": 15,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 11980,
+      "eventType": "GRIPPER_GRASPED",
+      "stage": "PICK_FINISHED",
+      "cycleIndex": 1,
+      "workpieceId": "WP-0001",
+      "componentId": "gripper",
+      "severity": "INFO",
+      "message": "Clamped finished workpiece from station",
+      "payload": {}
+    },
+    {
+      "seq": 16,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 12420,
+      "eventType": "STAGE_ENTERED",
+      "stage": "TRANSFER_TO_OUTPUT",
+      "cycleIndex": 1,
+      "workpieceId": "WP-0001",
+      "componentId": "robot-arm",
+      "severity": "INFO",
+      "message": "Transferring finished workpiece toward output conveyor",
+      "payload": {}
+    },
+    {
+      "seq": 17,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 13560,
+      "eventType": "STAGE_ENTERED",
+      "stage": "PLACE_WORKPIECE",
+      "cycleIndex": 1,
+      "workpieceId": "WP-0001",
+      "componentId": "output-conveyor",
+      "severity": "INFO",
+      "message": "Descending to place finished workpiece on output belt",
+      "payload": {}
+    },
+    {
+      "seq": 18,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 14300,
+      "eventType": "GRIPPER_RELEASED",
+      "stage": "PLACE_WORKPIECE",
+      "cycleIndex": 1,
+      "workpieceId": "WP-0001",
+      "componentId": "gripper",
+      "severity": "INFO",
+      "message": "Released finished workpiece onto output conveyor",
+      "payload": {}
+    },
+    {
+      "seq": 19,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 14740,
+      "eventType": "STAGE_ENTERED",
+      "stage": "CYCLE_COMPLETE",
+      "cycleIndex": 1,
+      "workpieceId": "WP-0001",
+      "componentId": null,
+      "severity": "INFO",
+      "message": "Cycle 1 complete",
+      "payload": {}
+    },
+    {
+      "seq": 20,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 14740,
+      "eventType": "CYCLE_COMPLETED",
+      "stage": "CYCLE_COMPLETE",
+      "cycleIndex": 1,
+      "workpieceId": "WP-0001",
+      "componentId": null,
+      "severity": "INFO",
+      "message": "Completed production unit #1",
+      "payload": {}
+    },
+    {
+      "seq": 21,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 14740,
+      "eventType": "CYCLE_STARTED",
+      "stage": "CYCLE_COMPLETE",
+      "cycleIndex": 2,
+      "workpieceId": null,
+      "componentId": null,
+      "severity": "INFO",
+      "message": "Cycle 2 started",
+      "payload": {}
+    },
+    {
+      "seq": 22,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 14740,
+      "eventType": "STAGE_ENTERED",
+      "stage": "DETECT_OBJECT",
+      "cycleIndex": 2,
+      "workpieceId": null,
+      "componentId": "input-conveyor",
+      "severity": "INFO",
+      "message": "Waiting for workpiece at input pick zone",
+      "payload": {}
+    },
+    {
+      "seq": 23,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 14760,
+      "eventType": "STAGE_ENTERED",
+      "stage": "APPROACH_PICK",
+      "cycleIndex": 2,
+      "workpieceId": "WP-0002",
+      "componentId": "robot-arm",
+      "severity": "INFO",
+      "message": "Workpiece WP-0002 ready; approaching pick hover",
+      "payload": {}
+    },
+    {
+      "seq": 24,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 16820,
+      "eventType": "STAGE_ENTERED",
+      "stage": "PICK_WORKPIECE",
+      "cycleIndex": 2,
+      "workpieceId": "WP-0002",
+      "componentId": "gripper",
+      "severity": "INFO",
+      "message": "Descending to grasp workpiece from input belt",
+      "payload": {}
+    },
+    {
+      "seq": 25,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 17560,
+      "eventType": "GRIPPER_GRASPED",
+      "stage": "PICK_WORKPIECE",
+      "cycleIndex": 2,
+      "workpieceId": "WP-0002",
+      "componentId": "gripper",
+      "severity": "INFO",
+      "message": "Gripper clamped WP-0002",
+      "payload": {}
+    },
+    {
+      "seq": 26,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 18000,
+      "eventType": "STAGE_ENTERED",
+      "stage": "TRANSFER_TO_STATION",
+      "cycleIndex": 2,
+      "workpieceId": "WP-0002",
+      "componentId": "robot-arm",
+      "severity": "INFO",
+      "message": "Transferring workpiece to processing station approach",
+      "payload": {}
+    },
+    {
+      "seq": 27,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 19140,
+      "eventType": "STAGE_ENTERED",
+      "stage": "PROCESS_WORKPIECE",
+      "cycleIndex": 2,
+      "workpieceId": "WP-0002",
+      "componentId": "processing-station",
+      "severity": "INFO",
+      "message": "Placing workpiece into processing station fixture",
+      "payload": {}
+    },
+    {
+      "seq": 28,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 19880,
+      "eventType": "GRIPPER_RELEASED",
+      "stage": "PROCESS_WORKPIECE",
+      "cycleIndex": 2,
+      "workpieceId": "WP-0002",
+      "componentId": "gripper",
+      "severity": "INFO",
+      "message": "Released workpiece at processing station",
+      "payload": {}
+    },
+    {
+      "seq": 29,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 22820,
+      "eventType": "STAGE_ENTERED",
+      "stage": "PICK_FINISHED",
+      "cycleIndex": 2,
+      "workpieceId": "WP-0002",
+      "componentId": "gripper",
+      "severity": "INFO",
+      "message": "Processing finished; descending to pick finished part",
+      "payload": {}
+    },
+    {
+      "seq": 30,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 23560,
+      "eventType": "GRIPPER_GRASPED",
+      "stage": "PICK_FINISHED",
+      "cycleIndex": 2,
+      "workpieceId": "WP-0002",
+      "componentId": "gripper",
+      "severity": "INFO",
+      "message": "Clamped finished workpiece from station",
+      "payload": {}
+    },
+    {
+      "seq": 31,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 24000,
+      "eventType": "STAGE_ENTERED",
+      "stage": "TRANSFER_TO_OUTPUT",
+      "cycleIndex": 2,
+      "workpieceId": "WP-0002",
+      "componentId": "robot-arm",
+      "severity": "INFO",
+      "message": "Transferring finished workpiece toward output conveyor",
+      "payload": {}
+    },
+    {
+      "seq": 32,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 25140,
+      "eventType": "STAGE_ENTERED",
+      "stage": "PLACE_WORKPIECE",
+      "cycleIndex": 2,
+      "workpieceId": "WP-0002",
+      "componentId": "output-conveyor",
+      "severity": "INFO",
+      "message": "Descending to place finished workpiece on output belt",
+      "payload": {}
+    },
+    {
+      "seq": 33,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 25880,
+      "eventType": "GRIPPER_RELEASED",
+      "stage": "PLACE_WORKPIECE",
+      "cycleIndex": 2,
+      "workpieceId": "WP-0002",
+      "componentId": "gripper",
+      "severity": "INFO",
+      "message": "Released finished workpiece onto output conveyor",
+      "payload": {}
+    },
+    {
+      "seq": 34,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 26320,
+      "eventType": "STAGE_ENTERED",
+      "stage": "CYCLE_COMPLETE",
+      "cycleIndex": 2,
+      "workpieceId": "WP-0002",
+      "componentId": null,
+      "severity": "INFO",
+      "message": "Cycle 2 complete",
+      "payload": {}
+    },
+    {
+      "seq": 35,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 26320,
+      "eventType": "CYCLE_COMPLETED",
+      "stage": "CYCLE_COMPLETE",
+      "cycleIndex": 2,
+      "workpieceId": "WP-0002",
+      "componentId": null,
+      "severity": "INFO",
+      "message": "Completed production unit #2",
+      "payload": {}
+    },
+    {
+      "seq": 36,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 26320,
+      "eventType": "CYCLE_STARTED",
+      "stage": "CYCLE_COMPLETE",
+      "cycleIndex": 3,
+      "workpieceId": null,
+      "componentId": null,
+      "severity": "INFO",
+      "message": "Cycle 3 started",
+      "payload": {}
+    },
+    {
+      "seq": 37,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 26320,
+      "eventType": "STAGE_ENTERED",
+      "stage": "DETECT_OBJECT",
+      "cycleIndex": 3,
+      "workpieceId": null,
+      "componentId": "input-conveyor",
+      "severity": "INFO",
+      "message": "Waiting for workpiece at input pick zone",
+      "payload": {}
+    },
+    {
+      "seq": 38,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 26340,
+      "eventType": "STAGE_ENTERED",
+      "stage": "APPROACH_PICK",
+      "cycleIndex": 3,
+      "workpieceId": "WP-0003",
+      "componentId": "robot-arm",
+      "severity": "INFO",
+      "message": "Workpiece WP-0003 ready; approaching pick hover",
+      "payload": {}
+    },
+    {
+      "seq": 39,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 28400,
+      "eventType": "STAGE_ENTERED",
+      "stage": "PICK_WORKPIECE",
+      "cycleIndex": 3,
+      "workpieceId": "WP-0003",
+      "componentId": "gripper",
+      "severity": "INFO",
+      "message": "Descending to grasp workpiece from input belt",
+      "payload": {}
+    },
+    {
+      "seq": 40,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 29140,
+      "eventType": "GRIPPER_GRASPED",
+      "stage": "PICK_WORKPIECE",
+      "cycleIndex": 3,
+      "workpieceId": "WP-0003",
+      "componentId": "gripper",
+      "severity": "INFO",
+      "message": "Gripper clamped WP-0003",
+      "payload": {}
+    },
+    {
+      "seq": 41,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 29580,
+      "eventType": "STAGE_ENTERED",
+      "stage": "TRANSFER_TO_STATION",
+      "cycleIndex": 3,
+      "workpieceId": "WP-0003",
+      "componentId": "robot-arm",
+      "severity": "INFO",
+      "message": "Transferring workpiece to processing station approach",
+      "payload": {}
+    },
+    {
+      "seq": 42,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 30720,
+      "eventType": "STAGE_ENTERED",
+      "stage": "PROCESS_WORKPIECE",
+      "cycleIndex": 3,
+      "workpieceId": "WP-0003",
+      "componentId": "processing-station",
+      "severity": "INFO",
+      "message": "Placing workpiece into processing station fixture",
+      "payload": {}
+    },
+    {
+      "seq": 43,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 31460,
+      "eventType": "GRIPPER_RELEASED",
+      "stage": "PROCESS_WORKPIECE",
+      "cycleIndex": 3,
+      "workpieceId": "WP-0003",
+      "componentId": "gripper",
+      "severity": "INFO",
+      "message": "Released workpiece at processing station",
+      "payload": {}
+    },
+    {
+      "seq": 44,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 34400,
+      "eventType": "STAGE_ENTERED",
+      "stage": "PICK_FINISHED",
+      "cycleIndex": 3,
+      "workpieceId": "WP-0003",
+      "componentId": "gripper",
+      "severity": "INFO",
+      "message": "Processing finished; descending to pick finished part",
+      "payload": {}
+    },
+    {
+      "seq": 45,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 35140,
+      "eventType": "GRIPPER_GRASPED",
+      "stage": "PICK_FINISHED",
+      "cycleIndex": 3,
+      "workpieceId": "WP-0003",
+      "componentId": "gripper",
+      "severity": "INFO",
+      "message": "Clamped finished workpiece from station",
+      "payload": {}
+    },
+    {
+      "seq": 46,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 35580,
+      "eventType": "STAGE_ENTERED",
+      "stage": "TRANSFER_TO_OUTPUT",
+      "cycleIndex": 3,
+      "workpieceId": "WP-0003",
+      "componentId": "robot-arm",
+      "severity": "INFO",
+      "message": "Transferring finished workpiece toward output conveyor",
+      "payload": {}
+    },
+    {
+      "seq": 47,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 36720,
+      "eventType": "STAGE_ENTERED",
+      "stage": "PLACE_WORKPIECE",
+      "cycleIndex": 3,
+      "workpieceId": "WP-0003",
+      "componentId": "output-conveyor",
+      "severity": "INFO",
+      "message": "Descending to place finished workpiece on output belt",
+      "payload": {}
+    },
+    {
+      "seq": 48,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 37460,
+      "eventType": "GRIPPER_RELEASED",
+      "stage": "PLACE_WORKPIECE",
+      "cycleIndex": 3,
+      "workpieceId": "WP-0003",
+      "componentId": "gripper",
+      "severity": "INFO",
+      "message": "Released finished workpiece onto output conveyor",
+      "payload": {}
+    },
+    {
+      "seq": 49,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 37900,
+      "eventType": "STAGE_ENTERED",
+      "stage": "CYCLE_COMPLETE",
+      "cycleIndex": 3,
+      "workpieceId": "WP-0003",
+      "componentId": null,
+      "severity": "INFO",
+      "message": "Cycle 3 complete",
+      "payload": {}
+    },
+    {
+      "seq": 50,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 37900,
+      "eventType": "CYCLE_COMPLETED",
+      "stage": "CYCLE_COMPLETE",
+      "cycleIndex": 3,
+      "workpieceId": "WP-0003",
+      "componentId": null,
+      "severity": "INFO",
+      "message": "Completed production unit #3",
+      "payload": {}
+    },
+    {
+      "seq": 51,
+      "runId": "run-baseline-a-s42",
+      "simTimeMs": 39040,
+      "eventType": "STAGE_ENTERED",
+      "stage": "IDLE",
+      "cycleIndex": 3,
+      "workpieceId": null,
+      "componentId": null,
+      "severity": "INFO",
+      "message": "Production target reached; robot returned home",
+      "payload": {}
+    }
+  ],
+  "metrics": {
+    "runId": "run-baseline-a-s42",
+    "scenarioId": "baseline-a",
+    "totalSimTimeMs": 39040,
+    "totalUnitsProduced": 3,
+    "unitsPerHour": 276.6393442622951,
+    "averageCycleTimeMs": 12633.333333333334,
+    "minCycleTimeMs": 11580,
+    "maxCycleTimeMs": 14740,
+    "robotActiveTimeMs": 26720,
+    "robotUtilizationPct": 68.44262295081968,
+    "conveyorActiveTimeMs": 14740,
+    "conveyorUtilizationPct": 37.75614754098361,
+    "idleTimeMs": 4820,
+    "downtimeMs": 0,
+    "collisionEventCount": 0,
+    "nearCollisionEventCount": 0,
+    "estimatedEnergyWh": 2.69812410095719,
+    "energyPerUnitWh": 0.8993747003190634,
+    "productionEfficiencyPct": 100.0,
+    "perCycleHistory": [
+      {
+        "cycleIndex": 1,
+        "cycleTimeMs": 14740,
+        "robotMoveMs": 7920,
+        "processDwellMs": 2500,
+        "waitTimeMs": 4100,
+        "energyWh": 0.9291330421823831,
+        "hadNearCollision": false,
+        "hadFault": false
+      },
+      {
+        "cycleIndex": 2,
+        "cycleTimeMs": 11580,
+        "robotMoveMs": 8840,
+        "processDwellMs": 2500,
+        "waitTimeMs": 20,
+        "energyWh": 0.8463327280399502,
+        "hadNearCollision": false,
+        "hadFault": false
+      },
+      {
+        "cycleIndex": 3,
+        "cycleTimeMs": 11580,
+        "robotMoveMs": 8840,
+        "processDwellMs": 2500,
+        "waitTimeMs": 20,
+        "energyWh": 0.8264716169288383,
+        "hadNearCollision": false,
+        "hadFault": false
+      }
+    ]
+  },
+  "finalSnapshot": {
+    "runId": "run-baseline-a-s42",
+    "simTimeMs": 39040,
+    "tickIndex": 1952,
+    "runStatus": "COMPLETED",
+    "stage": "IDLE",
+    "activeCycleIndex": 3,
+    "completedUnits": 3,
+    "targetUnits": 3,
+    "joints": [
+      {
+        "id": "J1",
+        "angleRad": 0.0,
+        "velocityRadPerSec": 0.0,
+        "accelerationRadPerSec2": 0.0,
+        "atLimit": false,
+        "utilizationRatio": 0.0
+      },
+      {
+        "id": "J2",
+        "angleRad": 0.17453292519943295,
+        "velocityRadPerSec": -0.0,
+        "accelerationRadPerSec2": -0.0,
+        "atLimit": false,
+        "utilizationRatio": 0.005813953488372075
+      },
+      {
+        "id": "J3",
+        "angleRad": 0.3490658503988659,
+        "velocityRadPerSec": 0.0,
+        "accelerationRadPerSec2": 0.0,
+        "atLimit": false,
+        "utilizationRatio": 0.024509803921568617
+      },
+      {
+        "id": "J4",
+        "angleRad": 0.0,
+        "velocityRadPerSec": -0.0,
+        "accelerationRadPerSec2": -0.0,
+        "atLimit": false,
+        "utilizationRatio": 0.0
+      },
+      {
+        "id": "J5",
+        "angleRad": 1.047197551196598,
+        "velocityRadPerSec": -0.0,
+        "accelerationRadPerSec2": -0.0,
+        "atLimit": false,
+        "utilizationRatio": 0.12000000000000004
+      },
+      {
+        "id": "J6",
+        "angleRad": 0.0,
+        "velocityRadPerSec": 0.0,
+        "accelerationRadPerSec2": 0.0,
+        "atLimit": false,
+        "utilizationRatio": 0.0
+      }
+    ],
+    "linkWorldPoses": [
+      {
+        "position": {
+          "x": 0.0,
+          "y": 0.45,
+          "z": 0.0
+        },
+        "orientation": {
+          "x": -0.5,
+          "y": 0.5,
+          "z": 0.5,
+          "w": 0.5
+        }
+      },
+      {
+        "position": {
+          "x": 0.0,
+          "y": 0.79,
+          "z": -0.08
+        },
+        "orientation": {
+          "x": -0.7071067811865475,
+          "y": 2.1648901405887332e-17,
+          "z": 0.7071067811865476,
+          "w": 2.1648901405887332e-17
+        }
+      },
+      {
+        "position": {
+          "x": 2.5326874912539853e-17,
+          "y": 1.2036192562651273,
+          "z": -0.15293223462011077
+        },
+        "orientation": {
+          "x": 0.5416752204197018,
+          "y": 0.45451947767204365,
+          "z": -0.541675220419702,
+          "w": -0.4545194776720437
+        }
+      },
+      {
+        "position": {
+          "x": 2.797831300935212e-17,
+          "y": 1.2469205264543493,
+          "z": -0.17793223462011076
+        },
+        "orientation": {
+          "x": 0.6830127018922193,
+          "y": 0.6830127018922193,
+          "z": -0.18301270189221938,
+          "w": 0.1830127018922193
+        }
+      },
+      {
+        "position": {
+          "x": -8.761090965068477e-18,
+          "y": 1.0469205264543493,
+          "z": -0.5243423961338862
+        },
+        "orientation": {
+          "x": 0.6123724356957945,
+          "y": 0.3535533905932738,
+          "z": -0.6123724356957946,
+          "w": -0.35355339059327384
+        }
+      },
+      {
+        "position": {
+          "x": -8.761090965068477e-18,
+          "y": 1.0469205264543493,
+          "z": -0.5243423961338862
+        },
+        "orientation": {
+          "x": 0.5,
+          "y": 0.49999999999999994,
+          "z": -0.5000000000000002,
+          "w": 0.5
+        }
+      },
+      {
+        "position": {
+          "x": -2.1007558956542006e-17,
+          "y": 0.9469205264543494,
+          "z": -0.5243423961338862
+        },
+        "orientation": {
+          "x": 0.5,
+          "y": 0.49999999999999994,
+          "z": -0.5000000000000002,
+          "w": 0.5
+        }
+      }
+    ],
+    "tcpWorldPose": {
+      "position": {
+        "x": -3.5703320546310237e-17,
+        "y": 0.8269205264543493,
+        "z": -0.5243423961338862
+      },
+      "orientation": {
+        "x": 0.5,
+        "y": 0.49999999999999994,
+        "z": -0.5000000000000002,
+        "w": 0.5
+      }
+    },
+    "gripper": {
+      "actuationState": "OPEN",
+      "jawOpeningMeters": 0.08,
+      "heldWorkpieceId": null,
+      "clampForceNormalized": 0.0
+    },
+    "inputConveyor": {
+      "id": "input-conveyor",
+      "running": false,
+      "speedMetersPerSec": 0.2,
+      "sensorTriggered": false,
+      "workpieceCountOnBelt": 0
+    },
+    "outputConveyor": {
+      "id": "output-conveyor",
+      "running": true,
+      "speedMetersPerSec": 0.2,
+      "sensorTriggered": false,
+      "workpieceCountOnBelt": 1
+    },
+    "station": {
+      "occupied": false,
+      "activeWorkpieceId": null,
+      "processingProgress": 0.0,
+      "clampEngaged": false
+    },
+    "workpieces": [
+      {
+        "id": "WP-0003",
+        "massKg": 1.2,
+        "dimensionsMeters": {
+          "x": 0.06,
+          "y": 0.06,
+          "z": 0.06
+        },
+        "poseWorld": {
+          "position": {
+            "x": 0.7880000000000003,
+            "y": 0.75,
+            "z": 0.08
+          },
+          "orientation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          }
+        },
+        "status": "ON_OUTPUT_CONVEYOR",
+        "spawnTimeMs": 2220,
+        "completedTimeMs": null
+      }
+    ],
+    "collision": {
+      "severity": "NONE",
+      "minClearanceMeters": 0.047162336455016926,
+      "pairA": "link-4",
+      "pairB": "gripper",
+      "contactPointWorld": null
+    },
+    "activeFault": null,
+    "cumulativeEnergyWh": 2.69812410095719
+  }
+}
