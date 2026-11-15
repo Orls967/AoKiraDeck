@@ -294,14 +294,14 @@ flowchart LR
     UI["React UI<br/>Three.js / R3F 3D scene<br/>Zustand stores, Recharts"]
     W["Web Worker"]
     E["aokira-engine (Rust → WASM)<br/>FK / DLS-IK · quintic trajectories<br/>capsule/OBB collision · 8-stage state machine<br/>events + KPIs, fixed 20 ms ticks"]
-    UI <-- "commands / snapshots + events" --> W
+    UI <-->|"commands / snapshots + events"| W
     W <--> E
   end
   subgraph API["Python service (optional)"]
     F["FastAPI /api/v1<br/>validation · bottleneck · forecast<br/>energy · SciPy SLSQP optimizer"]
   end
   CFG[("data/workcell + data/scenarios<br/>canonical JSON config")]
-  UI -- "REST (events, scenarios)" --> F
+  UI -->|"REST (events, scenarios)"| F
   CFG --> E
   CFG --> F
   CFG --> UI
