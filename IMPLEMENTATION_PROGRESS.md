@@ -126,6 +126,7 @@
 **UI**
 - Optimization Center: objective hints, "Optimize process dwell" toggle, **Compare Objectives** (runs all three) with a results table, and a **cycle-time vs energy trade-off map** (presets, baseline, optimized points) replacing the bar chart that mixed u/h with "cWh = Wh×100".
 - 3D scene: procedural Lightformer environment (offline-safe) so PBR metals no longer render black; neutral fill light; subtler selection emissive (cyan tint had turned the safety-orange links salmon); lighter structural graphite; transparent fence panels no longer write depth (they rendered as opaque black slabs); safety-yellow guard posts.
+- Adaptive render quality: CPU-rasterised WebGL (SwiftShader/llvmpipe/Basic Render, e.g. VMs, CI, GPU acceleration off) skips the environment map and shadows and uses DPR 1. SwiftShader frame rate 0.54 → 11.6 FPS (it was 4.7 before this overhaul); GPU path unchanged at 60 FPS.
 - Analytics and Optimization routes lazy-loaded: Recharts (113 kB gzip) no longer downloaded on landing.
 - React Router v7 future flags enabled (removes console warnings).
 
