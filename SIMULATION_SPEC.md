@@ -146,6 +146,7 @@ Given effective limits scaled by scenario parameters (`v_eff = v_max * robotSpee
 - Input conveyor spawns a synthetic `60 x 60 x 60 mm` workpiece at `(-1.380, 0.750, +0.080)` whenever belt entry is clear (`>= 0.220 m` spacing) and remaining target units allow.
 - On each tick $\Delta t = 0.020\text{ s}$, ungrasped workpieces on a running belt advance along `+X_w` by `v_belt * 0.020 m`.
 - **Input Zone Stop**: When a workpiece reaches `x >= -0.560`, `sensor-input` triggers, input belt pauses for that leading workpiece (holding it cleanly at pick zone `(-0.560, 0.750, +0.080)`), and transitions `DETECT_OBJECT -> APPROACH_PICK`.
+- **PLC Belt Interlocks**: The input belt holds while the gripper clamps and lifts a part out of the pick zone (`PICK_WORKPIECE` actuation/retraction), and the output belt holds while the gripper releases and retracts in the drop zone (`PLACE_WORKPIECE` actuation/retraction). Without the input interlock a fast belt (`>= ~0.45 m/s`) drives the next part into the one being lifted. `RUST-PROD-07` verifies that every corner of the allowed parameter box (robot speed/accel `0.20`/`1.50`, input and output belts `0.05`/`0.60 m/s`, dwell `500`/`10000 ms`) completes without a collision fault.
 - **Output Belt Exit**: Placed workpieces at `(+0.560, 0.750, +0.080)` travel along `+X_w` until `x >= +1.400`, trigger `sensor-output`, increment completed output exit, and retire from active scene meshes.
 
 ### 5.3 Processing Station
@@ -206,12 +207,14 @@ Every transition emits a `SimulationEvent` with `STAGE_ENTERED` (and `CYCLE_STAR
 
 ### 7.2 Synthetic Energy Consumption Estimate
 Calculated per `20 ms` tick (`dt = 0.020 s`) as an **engineering demonstrator estimate** (never physical electrical metering):
-$$P_{\text{total}}(t) = P_{\text{idle}} + \sum_{i=1}^{6} \left( k_{\text{vel},i}|\dot{q}_i(t)| + k_{\text{acc},i}|\ddot{q}_i(t)| \right) + P_{\text{payload}}(m_{\text{held}}, \dot{q}) + P_{\text{aux}}(t)$$
+$$P_{\text{total}}(t) = P_{\text{idle}} + \sum_{i=1}^{6} \left( k_{\text{vel},i}|\dot{q}_i(t)| + k_{\text{acc},i}|\ddot{q}_i(t)| + k_{\text{res},i}\,\ddot{q}_i(t)^2 \right) + P_{\text{payload}}(m_{\text{held}}, \dot{q}) + P_{\text{aux}}(t)$$
 - $P_{\text{idle}} = 120\text{ W}$ (controller + standby servos + sensors)
 - Joint mechanical/drive proxy coefficients: $k_{\text{vel},i} = 0.35\,\tau_{\text{rated},i}$, $k_{\text{acc},i} = 0.04\,\tau_{\text{rated},i}$
+- Resistive (copper, $I^2R$) drive loss: $+\,k_{\text{res},i}\,\ddot{q}_i(t)^2$ per joint with $k_{\text{res},i} = 0.010\,\tau_{\text{rated},i}$ (W per (rad/s²)²). Motor current scales with torque, and torque scales with acceleration, so dissipated power grows with $\ddot{q}^2$. Without this term, energy per unit falls monotonically with speed: idle standby power dominates, so "fastest" would always also be "most efficient". With it, energy per unit has an interior minimum (around `1.0×`–`1.2×` speed with reduced acceleration for the baseline cell), and `MIN_ENERGY_PER_UNIT` genuinely differs from `MIN_CYCLE_TIME`.
 - Payload lift/carry proxy: $P_{\text{payload}} = 18.0 \cdot m_{\text{held}} \cdot \max(\|\dot{q}\|_2, 0.1)\text{ W}$ when holding workpiece
 - Auxiliary power: $P_{\text{aux}} = 65\text{ W}$ per active conveyor + `180 W` during `PROCESS_WORKPIECE`
 - Tick energy increment: $\Delta E_{\text{J}} = P_{\text{total}}(t)\cdot \Delta t$, $\Delta E_{\text{Wh}} = \Delta E_{\text{J}} / 3600$.
+- **Analytical surrogate (Python optimizer)**: `apps/api/app/analytics/surrogate.py` integrates the same terms in closed form over each quintic segment ($\int|\ddot{s}| = 3.75$, $\int\ddot{s}^2 = 120/7$ on the unit interval) using the canonical joint limits. It is calibrated against the engine with `cargo run --release --example energy_sweep -- --grid` and tracks it within about `1 %` for cycle time and energy per unit across speed `0.5`–`1.4×`, belts `0.15`–`0.5 m/s` and dwell `1.2`–`3.5 s`.
 
 ---
 

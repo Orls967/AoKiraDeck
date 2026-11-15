@@ -7,7 +7,7 @@
     "timestepMs": 20,
     "cycleMode": "FIXED_COUNT",
     "targetQuantity": 3,
-    "targetProductionRatePerHour": 60.0,
+    "targetProductionRatePerHour": 330.0,
     "robotSpeedScale": 1.0,
     "robotAccelScale": 1.0,
     "inputConveyorSpeedMps": 0.2,
@@ -692,15 +692,15 @@
     "maxCycleTimeMs": 14740,
     "robotActiveTimeMs": 26720,
     "robotUtilizationPct": 68.44262295081968,
-    "conveyorActiveTimeMs": 14740,
-    "conveyorUtilizationPct": 37.75614754098361,
+    "conveyorActiveTimeMs": 15640,
+    "conveyorUtilizationPct": 40.06147540983606,
     "idleTimeMs": 4820,
     "downtimeMs": 0,
     "collisionEventCount": 0,
     "nearCollisionEventCount": 0,
-    "estimatedEnergyWh": 2.69812410095719,
-    "energyPerUnitWh": 0.8993747003190634,
-    "productionEfficiencyPct": 100.0,
+    "estimatedEnergyWh": 2.9902837359779406,
+    "energyPerUnitWh": 0.9967612453259802,
+    "productionEfficiencyPct": 90.29806259314456,
     "perCycleHistory": [
       {
         "cycleIndex": 1,
@@ -708,7 +708,7 @@
         "robotMoveMs": 7920,
         "processDwellMs": 2500,
         "waitTimeMs": 4100,
-        "energyWh": 0.9291330421823831,
+        "energyWh": 1.0294145408343616,
         "hadNearCollision": false,
         "hadFault": false
       },
@@ -718,7 +718,7 @@
         "robotMoveMs": 8840,
         "processDwellMs": 2500,
         "waitTimeMs": 20,
-        "energyWh": 0.8463327280399502,
+        "energyWh": 0.9420234856755269,
         "hadNearCollision": false,
         "hadFault": false
       },
@@ -728,7 +728,7 @@
         "robotMoveMs": 8840,
         "processDwellMs": 2500,
         "waitTimeMs": 20,
-        "energyWh": 0.8264716169288383,
+        "energyWh": 0.908801263453303,
         "hadNearCollision": false,
         "hadFault": false
       }
@@ -960,6 +960,6 @@
       "contactPointWorld": null
     },
     "activeFault": null,
-    "cumulativeEnergyWh": 2.69812410095719
+    "cumulativeEnergyWh": 2.9902837359779406
   }
 }

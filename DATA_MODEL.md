@@ -370,7 +370,7 @@ export interface ScenarioConfig {
   timestepMs: 20;                       // locked fixed timestep
   cycleMode: CycleMode;
   targetQuantity: number | null;        // 1 for SINGLE, N for FIXED_COUNT, null for CONTINUOUS
-  targetProductionRatePerHour: number;  // default 60
+  targetProductionRatePerHour: number;  // default 330 (takt ≈ 10.9 s)
   robotSpeedScale: number;              // [0.20, 1.50], default 1.00 (clamped by joint limits)
   robotAccelScale: number;              // [0.20, 1.50], default 1.00
   inputConveyorSpeedMps: number;        // [0.05, 0.60], default 0.20

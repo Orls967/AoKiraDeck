@@ -58,7 +58,8 @@
 - **`RUST-PROD-03` (Transport Controls)**: Verify `Start -> Pause -> Resume -> Stop -> Reset` preserves state accurately during `Pause` (zero clock/motion advance) and clears events/workpieces cleanly on `Reset` (`AC-11`).
 - **`RUST-PROD-04` (Fault Injection & Recovery)**: Test `PAYLOAD_EXCEEDED` (`workpieceMassKg = 5.5` if injected internally / clamped test fixture), `OBJECT_UNAVAILABLE`, `GRIPPER_FAILURE`, and `ESTOP_ACTIVE`; verify `FAULT` state blocks motion until `Reset`.
 - **`RUST-PROD-05` (Energy Monotonicity)**: Verify `cumulativeEnergyWh` strictly increases during active ticks and scales appropriately with higher `robotSpeedScale` and `workpieceMassKg`.
-- **`RUST-PROD-06` (Golden Fixture Regression)**: Compare generated JSON event stream and KPI summary for `Scenario A: Baseline` (`3` cycles) against committed golden fixture `data/fixtures/baseline-3cycles.golden.json`.
+- **`RUST-PROD-06` (Golden Fixture Regression)**: Compare generated JSON event stream and KPI summary for `Scenario A: Baseline` (`3` cycles) against committed golden fixture `data/fixtures/baseline-3cycles.golden.json`. Event order, integers and strings must match exactly; non-integer numbers within `1e-12` relative (cross-platform libm ULP differences).
+- **`RUST-PROD-07` (Zero Collisions Across Parameter Bounds)**: Run 3 cycles at all 16 corners of the API's allowed box (robot speed=accel `0.20`/`1.50`, input belt `0.05`/`0.60`, output belt `0.05`/`0.60 m/s`, dwell `500`/`10000 ms`); every run must complete with zero collision events. Guards the input/output PLC belt interlocks the optimizer's zero-collision constraint relies on.
 
 ---
 
@@ -73,6 +74,9 @@
 | **`API-05`** | `POST /api/v1/optimization/run` | Respects `OptimizationBounds`, `minThroughputUnitsPerHour`, and zero-collision rule; `recommendedProjected` beats or equals `baselineProjected` on objective (`AC-14`) |
 | **`API-06`** | `POST /api/v1/optimization/run` (Infeasible) | Requesting unreachable throughput (`minThroughputUnitsPerHour = 100000`) returns `INFEASIBLE_OPTIMIZATION` with clear diagnostic message |
 | **`API-07`** | `analytics/validation.py` & `energy.py` | Unit tests verifying negative duration rejection, `NaN`/`Inf` rejection, and energy component parity with `SIMULATION_SPEC.md` |
+| **`API-08`** | `analytics/surrogate.py` | Surrogate joint limits/torques/home pose equal `aokira-workcell.v1.json` (single source of truth) |
+| **`API-09`** | `analytics/surrogate.py` | Surrogate steady-state cycle time and energy per unit within `2 %` of the Rust golden fixture |
+| **`API-10`** | `analytics/optimization.py` | `MIN_CYCLE_TIME`, `MIN_ENERGY_PER_UNIT`, `BALANCED` give distinct recommendations; `BALANCED` lies strictly between the anchors on both metrics; `MIN_ENERGY_PER_UNIT` within `0.5 %` of a SciPy `differential_evolution` global reference; locked dwell bounds are respected |
 
 ---
 
@@ -127,7 +131,7 @@ Because concrete runtime timings depend on target browser GPU and hardware, perf
 | **AC-10** | Full 8-stage pick-and-place cycle completes | `RUST-PROD-01`, `E2E-03` | Cargo + Playwright |
 | **AC-11** | Pause, Resume, Stop, Reset work cleanly | `RUST-PROD-03`, `E2E-03` | Cargo + Playwright |
 | **AC-12** | Simulation events deterministically drive KPIs | `RUST-PROD-02`, `RUST-PROD-06`, `FE-03`, `E2E-03` | Cargo + Vitest + Playwright |
-| **AC-13** | Python analytics consumes runs & validates metrics | `API-01..03`, `API-07` | Pytest |
+| **AC-13** | Python analytics consumes runs & validates metrics | `API-01..03`, `API-07..09` | Pytest |
 | **AC-14** | Optimization Center compares scenarios & recommends config | `API-04..06`, `E2E-04` | Pytest + Playwright |
 | **AC-15** | UI displays fault & backend-unavailable states cleanly | `RUST-PROD-04`, `FE-04` | Cargo + Vitest |
 | **AC-16** | Responsive layout usable on desktop & mobile | `E2E-05` | Playwright (`390x844`, `1440x900`) |

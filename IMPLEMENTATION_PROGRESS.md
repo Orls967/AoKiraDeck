@@ -105,4 +105,28 @@
 - Converted `file:///Users/...` absolute links in all docs to repository-relative links so they work on GitHub.
 - Added `apps/web/playwright.screenshots.config.ts` + `apps/web/screenshots/capture.spec.ts` (`npm run screenshots`) producing the README gallery in `docs/screenshots/` (live Pages for browser-only views, local full stack for Python-backed views).
 - Rewrote `README.md` (feature tour per page/option, run modes, scenario table, architecture diagrams, setup, CI, limitations) and set the GitHub repository About (description, homepage, topics).
-- **Observation recorded:** with default bounds the optimizer returns the same recommendation for `MIN_CYCLE_TIME`, `MIN_ENERGY_PER_UNIT` and `BALANCED` (idle-standby energy dominates, so faster is also cheaper per unit). Documented under README Known Limitations; not changed.
+- **Observation recorded:** with default bounds the optimizer returned the same recommendation for `MIN_CYCLE_TIME`, `MIN_ENERGY_PER_UNIT` and `BALANCED`. Resolved in the next section.
+
+## Model & Optimizer Overhaul + UI Polish — DONE (2026-11-16)
+
+**Why the three objectives were identical.** The spec energy model had no term that penalised aggressive motion: idle standby (120 W) dominates, `k_vel·|q̇|` integrates to a speed-independent constant, and `k_acc·|q̈|` grows only linearly. Energy per unit therefore fell monotonically with speed, belt speed and shorter dwell, so every objective chose the same corner. Investigating this uncovered further defects:
+
+| Finding | Impact | Fix |
+|---|---|---|
+| No resistive drive loss | Min Energy ≡ Min Cycle | Added `k_res,i·q̈ᵢ²` (`k_res = 0.010·τ_rated`) to spec §7.2, Rust `metrics.rs`, Python surrogate. Engine energy/unit now has a U-shaped minimum around 1.0× speed. |
+| **Input belt ≥ ~0.45 m/s drove the next part into the one being lifted → Collision fault** | The optimizer's own recommendation (0.5 m/s belts) crashed in the real engine; "Zero-Collision ENFORCED" was untrue | Input-belt PLC interlock during `PICK_WORKPIECE` actuation/retraction (mirrors the existing output interlock). New `RUST-PROD-07` runs all 16 corners of the allowed parameter box; verified it fails without the interlock. |
+| Python surrogate constants out of sync with `aokira-workcell.v1.json` (all 6 accel limits, J5/J6 velocity, J1/J6 torque) and patched with a multiplicative fudge factor | Analytical estimates drifted from the engine | Constants synced (guarded by `API-08`), fudge replaced by physically meaningful offsets (4×300 ms gripper + settle, hand-off ticks), calibrated with new `examples/energy_sweep.rs`: cycle error ≤ 1.0 %, energy error ≤ 0.8 % over a 60-point grid (`API-09`). |
+| SLSQP stalled at its start point | Results not optimal (e.g. dwell 1420 ms when 1200 is better) | Optimizer now searches in normalised `[0,1]⁵` coordinates with unrounded/unquantised evaluations (rounding made finite-difference gradients zero), always keeps SLSQP's final iterate, `ftol 1e-9`. Min Energy within 0.1 % of a `differential_evolution` global reference (`API-10`). |
+| `BALANCED` weights normalised by baseline | Energy range (few %) swamped by cycle range (~25 %) → Balanced ≡ Min Cycle | Compromise programming: find both anchors, normalise by the actual trade-off range, then apply weights. Balanced now lies strictly between the anchors. |
+| Optimizer always cut process dwell to its lower bound | Dwell is a process requirement, not a robot tuning knob | UI locks dwell to the base scenario by default (opt-in checkbox). |
+| `targetProductionRatePerHour = 60` | "Production efficiency" always clamped to 100 %, "target attained 461 %" | Target set to 330 u/h (takt ≈ 10.9 s); baseline efficiency now 90 %. |
+
+**Resulting recommendations** (Scenario A, default bounds, dwell free): Min Cycle 1.40×/1.40× → 8 860 ms, 0.802 Wh · Balanced 1.40×/1.16× → 9 380 ms, 0.780 Wh · Min Energy 1.19×/0.78× → 10 780 ms, 0.765 Wh.
+
+**UI**
+- Optimization Center: objective hints, "Optimize process dwell" toggle, **Compare Objectives** (runs all three) with a results table, and a **cycle-time vs energy trade-off map** (presets, baseline, optimized points) replacing the bar chart that mixed u/h with "cWh = Wh×100".
+- 3D scene: procedural Lightformer environment (offline-safe) so PBR metals no longer render black; neutral fill light; subtler selection emissive (cyan tint had turned the safety-orange links salmon); lighter structural graphite; transparent fence panels no longer write depth (they rendered as opaque black slabs); safety-yellow guard posts.
+- Analytics and Optimization routes lazy-loaded: Recharts (113 kB gzip) no longer downloaded on landing.
+- React Router v7 future flags enabled (removes console warnings).
+
+**Verification:** Rust 23/23 (clippy 1.100 clean), Python 13/13 (ruff clean), Vitest 14/14, Playwright E2E 5/5 (E2E-04 now also asserts three distinct objective results).

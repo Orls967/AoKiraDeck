@@ -509,7 +509,8 @@ impl ProductionMachine {
         self.tick_index += 1;
         self.metrics.total_sim_time_ms = self.sim_time_ms;
 
-        // 1. Advance input & output conveyors deterministically (PLC interlock holds output belt while robot releases/retracts in drop zone)
+        // 1. Advance input & output conveyors deterministically (PLC interlocks hold the output belt while
+        //    the robot releases/retracts in the drop zone, and the input belt while it grasps/lifts)
         let can_spawn = self.can_spawn_more();
         let output_belt_speed = if self.stage == ProductionStage::PlaceWorkpiece
             && matches!(
@@ -520,10 +521,21 @@ impl ProductionMachine {
         } else {
             self.scenario.output_conveyor_speed_mps
         };
+        // Symmetric input interlock: hold the input belt while the gripper clamps and lifts the
+        // part out of the pick zone, so a fast belt cannot drive the next part into the held one.
+        let input_belt_speed = if self.stage == ProductionStage::PickWorkpiece
+            && matches!(
+                self.subphase,
+                StageSubphase::GripperActuating | StageSubphase::Retracting
+            ) {
+            0.0
+        } else {
+            self.scenario.input_conveyor_speed_mps
+        };
         let (input_state, output_state, spawned_opt, _exited_count) = advance_conveyors(
             &self.config,
             &mut self.workpieces,
-            self.scenario.input_conveyor_speed_mps,
+            input_belt_speed,
             output_belt_speed,
             dt_ms,
             self.sim_time_ms,

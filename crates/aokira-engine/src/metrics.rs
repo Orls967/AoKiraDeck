@@ -51,7 +51,12 @@ pub fn compute_tick_energy_wh(
         let tau_rated = config.robot.joints[i].rated_torque_nm;
         let k_vel = 0.35 * tau_rated;
         let k_acc = 0.04 * tau_rated;
-        p_joints += k_vel * dq[i].abs() + k_acc * ddq[i].abs();
+        // Resistive (copper / I^2R) drive loss: motor current scales with torque, which
+        // scales with acceleration, so dissipated power grows with ddq^2. This term makes
+        // very aggressive motion cost more energy per unit and gives the energy objective
+        // an interior optimum instead of always favouring maximum speed.
+        let k_res = 0.010 * tau_rated;
+        p_joints += k_vel * dq[i].abs() + k_acc * ddq[i].abs() + k_res * ddq[i] * ddq[i];
         dq_sq_sum += dq[i] * dq[i];
     }
 

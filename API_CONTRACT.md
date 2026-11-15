@@ -139,7 +139,7 @@ export interface AnalyticsEvaluateResponse {
     "timestepMs": 20,
     "cycleMode": "FIXED_COUNT",
     "targetQuantity": 5,
-    "targetProductionRatePerHour": 60,
+    "targetProductionRatePerHour": 330,
     "robotSpeedScale": 1.0,
     "robotAccelScale": 1.0,
     "inputConveyorSpeedMps": 0.2,

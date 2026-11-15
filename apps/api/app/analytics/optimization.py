@@ -156,6 +156,9 @@ def _scenario_from_vec(base: ScenarioConfig, vec: np.ndarray, idx_label: str) ->
     )
 
 
+_SearchPoint = tuple[np.ndarray, SurrogateEstimate, float, bool]
+
+
 def run_constrained_optimization(req: OptimizationRunRequest) -> OptimizationRunResponse:
     base = req.base_scenario
     weights = req.weights or OptimizationWeights()
@@ -170,6 +173,14 @@ def run_constrained_optimization(req: OptimizationRunRequest) -> OptimizationRun
     ]
     lo = np.array([b[0] for b in bounds_tuples], dtype=float)
     hi = np.array([b[1] for b in bounds_tuples], dtype=float)
+    span = hi - lo
+
+    def to_x(u: np.ndarray) -> np.ndarray:
+        return lo + np.clip(u, 0.0, 1.0) * span
+
+    def to_u(x: np.ndarray) -> np.ndarray:
+        safe = np.where(span > 0.0, span, 1.0)
+        return np.where(span > 0.0, (np.clip(x, lo, hi) - lo) / safe, 0.0)
 
     base_vec = np.clip(
         np.array(
@@ -187,25 +198,21 @@ def run_constrained_optimization(req: OptimizationRunRequest) -> OptimizationRun
     )
 
     eval_count = 0
-    evaluated: list[tuple[np.ndarray, SurrogateEstimate, float, bool]] = []
+    evaluated: list[_SearchPoint] = []
 
-    def score_raw(est: SurrogateEstimate) -> float:
-        norm_c = est.cycle_time_ms / max(baseline_est.cycle_time_ms, 1.0)
-        norm_e = est.energy_per_unit_wh / max(baseline_est.energy_per_unit_wh, 1e-6)
-        norm_idle = est.idle_time_ratio_pct / 100.0
-        if req.objective == "MIN_CYCLE_TIME":
-            return norm_c
-        if req.objective == "MIN_ENERGY_PER_UNIT":
-            return norm_e
-        w_sum = max(
-            weights.cycle_time_weight + weights.energy_weight + weights.idle_ratio_weight,
-            1e-9,
+    def estimate(x: np.ndarray, label: str) -> SurrogateEstimate:
+        # Unrounded, unquantised evaluation so finite-difference gradients are non-zero;
+        # candidates are snapped to 4 decimals / 20 ms dwell only when ranked at the end.
+        xc = np.clip(x, lo, hi)
+        sc = base.model_copy(
+            update={
+                "robot_speed_scale": float(xc[0]),
+                "robot_accel_scale": float(xc[1]),
+                "input_conveyor_speed_mps": float(xc[2]),
+                "output_conveyor_speed_mps": float(xc[3]),
+            }
         )
-        return (
-            weights.cycle_time_weight * norm_c
-            + weights.energy_weight * norm_e
-            + weights.idle_ratio_weight * norm_idle
-        ) / w_sum
+        return evaluate_scenario_surrogate(sc, continuous=True, dwell_ms=float(xc[4]))
 
     def is_feasible(est: SurrogateEstimate) -> bool:
         if est.throughput_units_per_hour < req.constraints.min_throughput_units_per_hour - 1e-6:
@@ -219,93 +226,125 @@ def run_constrained_optimization(req: OptimizationRunRequest) -> OptimizationRun
             return False
         return True
 
-    def eval_point(vec: np.ndarray, *, continuous: bool) -> tuple[float, SurrogateEstimate, bool]:
+    def search(score_fn, budget: int, record: bool) -> SurrogateEstimate | None:
+        """Seeded multi-start + SLSQP polish in normalised [0, 1]^5 coordinates.
+
+        Returns the best feasible continuous estimate found (or None)."""
         nonlocal eval_count
-        clipped = np.clip(vec, lo, hi)
-        eval_count += 1
-        sc = _scenario_from_vec(base, clipped, str(eval_count))
-        est = evaluate_scenario_surrogate(sc, continuous=continuous)
-        sc_score = score_raw(est)
-        feas = is_feasible(est)
-        evaluated.append((clipped, est, sc_score, feas))
-        return sc_score, est, feas
+        local: list[_SearchPoint] = []
+        spent = 0
 
-    # Deterministic seeded start points: baseline clamped, corner extremes, LHS samples
-    rng = np.random.default_rng(seed=base.seed)
-    mid_vec = 0.5 * (lo + hi)
-    fast_vec = np.array([hi[0], hi[1], hi[2], hi[3], lo[4]], dtype=float)
-    eco_vec = np.array(
-        [
-            lo[0] + 0.35 * (hi[0] - lo[0]),
-            lo[1] + 0.35 * (hi[1] - lo[1]),
-            mid_vec[2],
-            mid_vec[3],
-            lo[4],
-        ],
-        dtype=float,
-    )
+        def ev(u: np.ndarray) -> float:
+            nonlocal eval_count, spent
+            x = to_x(u)
+            est = estimate(x, "eval")
+            sc = score_fn(est)
+            feas = is_feasible(est)
+            spent += 1
+            eval_count += 1
+            local.append((x, est, sc, feas))
+            if record:
+                evaluated.append((x, est, sc, feas))
+            return sc
 
-    seeds: list[np.ndarray] = [base_vec, mid_vec, fast_vec, eco_vec]
-    sample_budget = max(4, min(req.max_evaluations // 2, 24))
-    while len(seeds) < sample_budget and eval_count < req.max_evaluations:
-        seeds.append(rng.uniform(lo, hi))
+        rng = np.random.default_rng(seed=base.seed)
+        seeds = [
+            to_u(base_vec),
+            np.full(5, 0.5),
+            np.array([1.0, 1.0, 1.0, 1.0, 0.0]),  # fast corner
+            np.array([0.35, 0.35, 0.5, 0.5, 0.0]),  # gentle motion
+        ]
+        n_seeds = max(4, min(12, budget // 4))
+        while len(seeds) < n_seeds:
+            seeds.append(rng.uniform(0.0, 1.0, 5))
+        for u in seeds:
+            if spent >= budget:
+                break
+            ev(u)
 
-    for seed_vec in seeds:
-        if eval_count >= req.max_evaluations:
-            break
-        eval_point(seed_vec, continuous=False)
-
-    # Polish best points using SciPy SLSQP with explicit inequality constraints
-    best_seeds = sorted(
-        evaluated,
-        key=lambda item: (0 if item[3] else 1, item[2]),
-    )[:3]
-
-    scipy_bounds = [(float(lo[i]), float(hi[i])) for i in range(5)]
-
-    def slsqp_objective(x: np.ndarray) -> float:
-        nonlocal eval_count
-        if eval_count >= req.max_evaluations:
-            est = evaluate_scenario_surrogate(
-                _scenario_from_vec(base, np.clip(x, lo, hi), "cap"),
-                continuous=True,
+        def throughput_con(u: np.ndarray) -> float:
+            return (
+                estimate(to_x(u), "con").throughput_units_per_hour
+                - req.constraints.min_throughput_units_per_hour
             )
-            return score_raw(est)
-        val, _, _ = eval_point(x, continuous=True)
-        return val
 
-    def slsqp_throughput_con(x: np.ndarray) -> float:
-        est = evaluate_scenario_surrogate(
-            _scenario_from_vec(base, np.clip(x, lo, hi), "con"),
-            continuous=True,
-        )
-        return est.throughput_units_per_hour - req.constraints.min_throughput_units_per_hour
-
-    slsqp_constraints = [{"type": "ineq", "fun": slsqp_throughput_con}]
-    if req.constraints.max_energy_per_unit_wh is not None:
-        max_e = req.constraints.max_energy_per_unit_wh
-
-        def slsqp_energy_con(x: np.ndarray) -> float:
-            est = evaluate_scenario_surrogate(
-                _scenario_from_vec(base, np.clip(x, lo, hi), "econ"),
-                continuous=True,
+        constraints = [{"type": "ineq", "fun": throughput_con}]
+        if req.constraints.max_energy_per_unit_wh is not None:
+            max_e = req.constraints.max_energy_per_unit_wh
+            constraints.append(
+                {
+                    "type": "ineq",
+                    "fun": lambda u: max_e - estimate(to_x(u), "econ").energy_per_unit_wh,
+                }
             )
-            return max_e - est.energy_per_unit_wh
 
-        slsqp_constraints.append({"type": "ineq", "fun": slsqp_energy_con})
+        starts = sorted(local, key=lambda item: (0 if item[3] else 1, item[2]))[:2]
+        for x0, _, _, _ in starts:
+            remaining = budget - spent
+            if remaining < 8:
+                break
+            res = minimize(
+                lambda u: ev(u) if spent < budget else score_fn(estimate(to_x(u), "cap")),
+                to_u(x0),
+                method="SLSQP",
+                bounds=[(0.0, 1.0)] * 5,
+                constraints=constraints,
+                options={"maxiter": max(3, remaining // 6), "ftol": 1e-9, "eps": 1e-4},
+            )
+            # Always keep SLSQP's final iterate, even if the evaluation budget ran out.
+            x_final = to_x(res.x)
+            est = estimate(x_final, "final")
+            item = (x_final, est, score_fn(est), is_feasible(est))
+            local.append(item)
+            if record:
+                evaluated.append(item)
 
-    for seed_vec, _, _, _ in best_seeds:
-        if eval_count >= req.max_evaluations:
-            break
-        rem = max(5, req.max_evaluations - eval_count)
-        minimize(
-            slsqp_objective,
-            seed_vec,
-            method="SLSQP",
-            bounds=scipy_bounds,
-            constraints=slsqp_constraints,
-            options={"maxiter": max(2, rem // 7), "ftol": 1e-4},
-        )
+        feasible = [it for it in local if it[3]]
+        if not feasible:
+            return None
+        return min(feasible, key=lambda it: it[2])[1]
+
+    def norm_cycle(est: SurrogateEstimate) -> float:
+        return est.cycle_time_ms / max(baseline_est.cycle_time_ms, 1.0)
+
+    def norm_energy(est: SurrogateEstimate) -> float:
+        return est.energy_per_unit_wh / max(baseline_est.energy_per_unit_wh, 1e-6)
+
+    if req.objective == "MIN_CYCLE_TIME":
+        score_raw = norm_cycle
+        search(score_raw, req.max_evaluations, record=True)
+    elif req.objective == "MIN_ENERGY_PER_UNIT":
+        score_raw = norm_energy
+        search(score_raw, req.max_evaluations, record=True)
+    else:
+        # Compromise programming: locate both single-objective anchors, then minimise a
+        # weighted sum of cycle time and energy normalised by the actual trade-off range
+        # between those anchors (utopia/nadir scaling), so BALANCED lands between them.
+        anchor_budget = max(10, req.max_evaluations // 4)
+        fastest = search(norm_cycle, anchor_budget, record=True)
+        leanest = search(norm_energy, anchor_budget, record=True)
+        w_c, w_e, w_i = weights.cycle_time_weight, weights.energy_weight, weights.idle_ratio_weight
+        w_sum = max(w_c + w_e + w_i, 1e-9)
+        if fastest is not None and leanest is not None:
+            c_lo, c_hi = fastest.cycle_time_ms, leanest.cycle_time_ms
+            e_lo, e_hi = leanest.energy_per_unit_wh, fastest.energy_per_unit_wh
+        else:
+            c_lo = c_hi = e_lo = e_hi = 0.0
+        c_range = c_hi - c_lo
+        e_range = e_hi - e_lo
+        conflict = c_range > 1e-3 * max(c_hi, 1.0) and e_range > 1e-4 * max(e_hi, 1e-6)
+
+        def score_raw(est: SurrogateEstimate) -> float:
+            idle = est.idle_time_ratio_pct / 100.0
+            if conflict:
+                nc = (est.cycle_time_ms - c_lo) / c_range
+                ne = (est.energy_per_unit_wh - e_lo) / e_range
+            else:
+                nc, ne = norm_cycle(est), norm_energy(est)
+            return (w_c * nc + w_e * ne + w_i * idle) / w_sum
+
+        remaining = max(10, req.max_evaluations - eval_count)
+        search(score_raw, remaining, record=True)
 
     # Quantize top unique points deterministically on integer 20 ms dwells
     feasible_items: list[tuple[ScenarioConfig, SurrogateEstimate, float]] = []
@@ -427,7 +466,13 @@ def run_constrained_optimization(req: OptimizationRunRequest) -> OptimizationRun
         ),
         top_candidates=candidates,
         note=(
-            f"Evaluated {eval_count} points via SLSQP + multi-start search; "
-            f"projected throughput change {tp_delta:+.1f}% vs baseline."
+            f"{req.objective}: evaluated {eval_count} surrogate points via seeded multi-start "
+            "+ SciPy SLSQP"
+            + (
+                " (BALANCED = compromise between the MIN_CYCLE_TIME and MIN_ENERGY_PER_UNIT "
+                "anchors, weights applied to the normalised trade-off range)."
+                if req.objective == "BALANCED"
+                else "."
+            )
         ),
     )

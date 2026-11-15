@@ -475,6 +475,59 @@ mod tests {
         final_snapshot: SimulationSnapshot,
     }
 
+    /// Every corner of the API's allowed parameter box (robot speed/accel, independent input
+    /// and output belt speeds, process dwell) must complete cycles without any collision
+    /// fault, so the optimizer's zero-collision constraint holds for any recommendation.
+    #[test]
+    fn rust_prod_07_no_collisions_across_parameter_bounds() {
+        let mut failures = Vec::new();
+        for &speed in &[0.2_f64, 1.5] {
+            for &belt_in in &[0.05_f64, 0.6] {
+                for &belt_out in &[0.05_f64, 0.6] {
+                    for &dwell in &[500_u64, 10_000] {
+                        let mut engine = SimulationEngine::new(None).unwrap();
+                        let scenario = ScenarioConfig {
+                            cycle_mode: CycleMode::FixedCount,
+                            target_quantity: Some(3),
+                            robot_speed_scale: speed,
+                            robot_accel_scale: speed,
+                            input_conveyor_speed_mps: belt_in,
+                            output_conveyor_speed_mps: belt_out,
+                            processing_dwell_ms: dwell,
+                            ..ScenarioConfig::default()
+                        };
+                        engine.load_scenario(scenario).unwrap();
+                        engine.command("START").unwrap();
+                        for _ in 0..20_000 {
+                            let out = engine.step_ticks(10);
+                            if matches!(
+                                out.snapshot.run_status,
+                                SimulationRunStatus::Completed | SimulationRunStatus::Faulted
+                            ) {
+                                break;
+                            }
+                        }
+                        let snap = engine.snapshot();
+                        let metrics = engine.metrics();
+                        if snap.run_status != SimulationRunStatus::Completed
+                            || metrics.collision_event_count > 0
+                        {
+                            failures.push(format!(
+                                "speed {speed} in {belt_in} out {belt_out} dwell {dwell}: {:?} {:?}",
+                                snap.run_status, snap.active_fault
+                            ));
+                        }
+                    }
+                }
+            }
+        }
+        assert!(
+            failures.is_empty(),
+            "collision/fault at bounds:\n{}",
+            failures.join("\n")
+        );
+    }
+
     #[test]
     fn rust_prod_06_golden_fixture_regression() {
         let mut engine = SimulationEngine::new(None).unwrap();

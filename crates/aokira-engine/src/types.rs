@@ -410,7 +410,7 @@ impl Default for ScenarioConfig {
             timestep_ms: 20,
             cycle_mode: CycleMode::FixedCount,
             target_quantity: Some(5),
-            target_production_rate_per_hour: 60.0,
+            target_production_rate_per_hour: 330.0,
             robot_speed_scale: 1.0,
             robot_accel_scale: 1.0,
             input_conveyor_speed_mps: 0.20,
