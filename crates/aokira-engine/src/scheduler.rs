@@ -237,6 +237,43 @@ mod tests {
     use super::*;
     use crate::types::{CycleMode, ProductionStage, SimulationEventType, WorkpieceStatus};
 
+    /// Recursively compares two JSON trees: exact for everything except non-integer
+    /// numbers, which must agree within a relative tolerance of 1e-12.
+    fn assert_json_matches(actual: &serde_json::Value, expected: &serde_json::Value, path: &str) {
+        use serde_json::Value;
+        match (actual, expected) {
+            (Value::Number(a), Value::Number(b)) if a.is_f64() || b.is_f64() => {
+                let (a, b) = (a.as_f64().unwrap(), b.as_f64().unwrap());
+                let scale = a.abs().max(b.abs()).max(1.0);
+                assert!(
+                    (a - b).abs() <= 1e-12 * scale,
+                    "golden fixture mismatch at {path}: {a} != {b}"
+                );
+            }
+            (Value::Array(a), Value::Array(b)) => {
+                assert_eq!(
+                    a.len(),
+                    b.len(),
+                    "golden fixture array length mismatch at {path}"
+                );
+                for (i, (x, y)) in a.iter().zip(b).enumerate() {
+                    assert_json_matches(x, y, &format!("{path}[{i}]"));
+                }
+            }
+            (Value::Object(a), Value::Object(b)) => {
+                let mut ka: Vec<_> = a.keys().collect();
+                let mut kb: Vec<_> = b.keys().collect();
+                ka.sort();
+                kb.sort();
+                assert_eq!(ka, kb, "golden fixture key mismatch at {path}");
+                for (k, v) in a {
+                    assert_json_matches(v, &b[k], &format!("{path}.{k}"));
+                }
+            }
+            _ => assert_eq!(actual, expected, "golden fixture mismatch at {path}"),
+        }
+    }
+
     #[test]
     fn rust_prod_01_single_cycle_complete() {
         let mut engine = SimulationEngine::new(None).unwrap();
@@ -480,10 +517,13 @@ mod tests {
         }
 
         let disk_raw = std::fs::read_to_string(&fixture_path).expect("golden fixture exists");
-        assert_eq!(
-            actual_json, disk_raw,
-            "golden fixture JSON regression mismatch"
-        );
+        // Event order, integers, strings and booleans must match exactly. Floating-point
+        // values may differ in the last ULP across platforms (e.g. macOS vs Linux libm
+        // sin/cos), so they are compared with a tight relative tolerance.
+        let actual_value: serde_json::Value = serde_json::from_str(&actual_json).unwrap();
+        let disk_value: serde_json::Value =
+            serde_json::from_str(&disk_raw).expect("golden fixture is valid JSON");
+        assert_json_matches(&actual_value, &disk_value, "$");
         let parsed: GoldenFixture =
             serde_json::from_str(&disk_raw).expect("golden fixture parses cleanly");
         assert_eq!(parsed.events.len(), fixture.events.len());
