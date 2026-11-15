@@ -37,7 +37,7 @@ Evaluating automated pick-and-place workcells typically requires expensive propr
 | **OBJ-05** | Guarantee offline resilience and graceful degradation | Core 3D workcell inspection and Rust/WASM production simulation remain fully operational when the Python backend is unavailable (`AC-15`). |
 | **OBJ-06** | Meet cross-device, accessibility, and build quality bars | Responsive desktop/mobile layouts, `prefers-reduced-motion` support, WebGL fallback view, and clean CI/test verification (`AC-16`–`AC-18`). |
 
-*(Note: Quantitative latency, FPS, and solver tolerance budgets are established and measured against hardware baselines in [TEST_PLAN.md](file:///Users/orl123456/Documents/AoKira/TEST_PLAN.md); no unmeasured benchmarks are fabricated.)*
+*(Note: Quantitative latency, FPS, and solver tolerance budgets are established and measured against hardware baselines in [TEST_PLAN.md](TEST_PLAN.md); no unmeasured benchmarks are fabricated.)*
 
 ---
 
@@ -91,7 +91,7 @@ The single canonical workcell modeled consistently across all views comprises:
 9. Emergency stop station.
 10. Presence sensors and status indicator beacons.
 
-Detailed coordinates, dimensions, DH parameters, and joint limits are canonically specified in [SIMULATION_SPEC.md](file:///Users/orl123456/Documents/AoKira/SIMULATION_SPEC.md) and typed in [DATA_MODEL.md](file:///Users/orl123456/Documents/AoKira/DATA_MODEL.md).
+Detailed coordinates, dimensions, DH parameters, and joint limits are canonically specified in [SIMULATION_SPEC.md](SIMULATION_SPEC.md) and typed in [DATA_MODEL.md](DATA_MODEL.md).
 
 ### 5.2 Application Views & Feature Requirements
 
@@ -141,18 +141,18 @@ Detailed coordinates, dimensions, DH parameters, and joint limits are canonicall
 
 | Category | Requirement | Canonical Reference |
 |---|---|---|
-| **Determinism** | Identical initial state, seed, and configuration must produce identical simulation state transitions, timestamps, and metrics across runs regardless of client frame rate. | [SIMULATION_SPEC.md](file:///Users/orl123456/Documents/AoKira/SIMULATION_SPEC.md) |
-| **Single Source of Truth** | Robot link geometry, joint limits, and workcell layout dimensions must load from one canonical configuration definition shared across Rust/WASM and TypeScript/Three.js. | [DATA_MODEL.md](file:///Users/orl123456/Documents/AoKira/DATA_MODEL.md) |
-| **Thread Separation** | Fixed-timestep simulation ticks and heavy IK/collision computations must execute inside a Web Worker (`Rust/WASM`), never blocking the React main UI/render thread. | [ARCHITECTURE.md](file:///Users/orl123456/Documents/AoKira/ARCHITECTURE.md) |
-| **Responsiveness & Accessibility** | Desktop-first layout with usable tablet/mobile views; keyboard navigation, ARIA labels, tabular numerals, `prefers-reduced-motion` support, and clean WebGL-unavailable fallback UI. | [DESIGN.md](file:///Users/orl123456/Documents/AoKira/DESIGN.md) |
-| **API Validation & Safety** | All TypeScript <-> Python requests/responses strictly validated via Pydantic v2 schemas and versioned under `/api/v1`. | [API_CONTRACT.md](file:///Users/orl123456/Documents/AoKira/API_CONTRACT.md) |
-| **Reliability & Testing** | Automated unit, integration, API contract, and end-to-end tests covering kinematics, collision cases, state machine determinism, and UI states. | [TEST_PLAN.md](file:///Users/orl123456/Documents/AoKira/TEST_PLAN.md) |
+| **Determinism** | Identical initial state, seed, and configuration must produce identical simulation state transitions, timestamps, and metrics across runs regardless of client frame rate. | [SIMULATION_SPEC.md](SIMULATION_SPEC.md) |
+| **Single Source of Truth** | Robot link geometry, joint limits, and workcell layout dimensions must load from one canonical configuration definition shared across Rust/WASM and TypeScript/Three.js. | [DATA_MODEL.md](DATA_MODEL.md) |
+| **Thread Separation** | Fixed-timestep simulation ticks and heavy IK/collision computations must execute inside a Web Worker (`Rust/WASM`), never blocking the React main UI/render thread. | [ARCHITECTURE.md](ARCHITECTURE.md) |
+| **Responsiveness & Accessibility** | Desktop-first layout with usable tablet/mobile views; keyboard navigation, ARIA labels, tabular numerals, `prefers-reduced-motion` support, and clean WebGL-unavailable fallback UI. | [DESIGN.md](DESIGN.md) |
+| **API Validation & Safety** | All TypeScript <-> Python requests/responses strictly validated via Pydantic v2 schemas and versioned under `/api/v1`. | [API_CONTRACT.md](API_CONTRACT.md) |
+| **Reliability & Testing** | Automated unit, integration, API contract, and end-to-end tests covering kinematics, collision cases, state machine determinism, and UI states. | [TEST_PLAN.md](TEST_PLAN.md) |
 
 ---
 
 ## 8. Acceptance Criteria (Canonical ID Registry)
 
-Every criterion below is mandatory prior to final delivery and maps directly to verification suites in [TEST_PLAN.md](file:///Users/orl123456/Documents/AoKira/TEST_PLAN.md).
+Every criterion below is mandatory prior to final delivery and maps directly to verification suites in [TEST_PLAN.md](TEST_PLAN.md).
 
 | ID | Criterion | Primary Verification Owner |
 |---|---|---|
@@ -181,7 +181,7 @@ Every criterion below is mandatory prior to final delivery and maps directly to 
 
 | Classification | Decisions Covered | Authority / Review Rule |
 |---|---|---|
-| **Locked Decisions** | Brand identity (`AoKira`), simulation-only boundary, 5 routes, 10 workcell components, generic 6-axis arm, 8-stage cycle, 3-tier `TypeScript/R3F + Rust/WASM + Python/FastAPI` split, `#0B0F14`–`#EF4444` color system, GitHub Pages + container backend topology, `AC-01`–`AC-18` | Immutable without explicit user approval ([constraints.md](file:///Users/orl123456/Documents/AoKira/constraints.md)). |
+| **Locked Decisions** | Brand identity (`AoKira`), simulation-only boundary, 5 routes, 10 workcell components, generic 6-axis arm, 8-stage cycle, 3-tier `TypeScript/R3F + Rust/WASM + Python/FastAPI` split, `#0B0F14`–`#EF4444` color system, GitHub Pages + container backend topology, `AC-01`–`AC-18` | Immutable without explicit user approval ([constraints.md](constraints.md)). |
 | **Reasonable Implementation Defaults** | DH link dimensions & joint limits (`SIMULATION_SPEC.md`), workcell world coordinates, DLS `lambda = 0.025` / `maxIterations = 120`, near-collision threshold `25 mm`, `300 ms` gripper actuation, `2500 ms` default dwell, energy model coefficients, HTTP timeouts (`3s`/`10s`/`20s`) | Locked in `DATA_MODEL.md` / `SIMULATION_SPEC.md` / `API_CONTRACT.md` so implementation agents do not guess; tunable via scenario config or documented spec update if calibration requires. |
 | **Engineering Assumptions** | Target users run modern WebAssembly + Web Worker browsers; HTTP analytics payloads remain `<= 5 MB`; single-user browser state does not require server database persistence; CORS allowlist suffices for stateless demo API access | Validated across Phase 4–7 tests. |
 | **Open Decisions (Deferred to Deployment / Phase 7–8)** | (1) Concrete hardware performance baseline numbers measured in Phase 7 (`TEST_PLAN.md` Section 8); (2) Choice of external container hosting provider for `apps/api` (`VITE_API_BASE_URL`) when deploying beyond Docker localhost; (3) Explicit user push/deploy authorization at Phase 8 | Does **not** block Phases 1–7 local implementation, testing, or GitHub Pages prep. |

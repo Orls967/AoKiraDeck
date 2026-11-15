@@ -1,7 +1,7 @@
 # AoKira — System Architecture
 
 **Document Role:** Canonical source of truth for overall system topology, technology stack, module organization across TypeScript, Rust/WASM, and Python, Web Worker protocol, data flow, error propagation, offline/graceful degradation, deployment topology, and runtime performance patterns.
-**Related Canonical Docs:** [DATA_MODEL.md](file:///Users/orl123456/Documents/AoKira/DATA_MODEL.md), [SIMULATION_SPEC.md](file:///Users/orl123456/Documents/AoKira/SIMULATION_SPEC.md), [API_CONTRACT.md](file:///Users/orl123456/Documents/AoKira/API_CONTRACT.md).
+**Related Canonical Docs:** [DATA_MODEL.md](DATA_MODEL.md), [SIMULATION_SPEC.md](SIMULATION_SPEC.md), [API_CONTRACT.md](API_CONTRACT.md).
 
 ---
 

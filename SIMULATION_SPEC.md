@@ -1,7 +1,7 @@
 # AoKira — Simulation Specification
 
 **Document Role:** Canonical source of truth for coordinate systems, workcell physical geometry, 6-axis manipulator kinematics (DH parameters & FK/IK), trajectory interpolation, collision detection, workpiece/gripper/conveyor/station mechanics, the 8-stage production state machine, deterministic fixed-timestep clock, energy estimation, and simulation boundaries.
-**Referenced Entity Types:** Defined in [DATA_MODEL.md](file:///Users/orl123456/Documents/AoKira/DATA_MODEL.md).
+**Referenced Entity Types:** Defined in [DATA_MODEL.md](DATA_MODEL.md).
 
 ---
 

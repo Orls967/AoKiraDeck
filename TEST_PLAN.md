@@ -1,7 +1,7 @@
 # AoKira — Quality Assurance & Test Plan
 
 **Document Role:** Canonical verification specification defining unit, engine, kinematics, collision, production cycle, API contract, frontend, end-to-end, regression, and performance baseline protocols, plus the authoritative Acceptance Test Matrix (`AC-01` through `AC-18`).
-**Related Canonical Docs:** [PRD.md](file:///Users/orl123456/Documents/AoKira/PRD.md), [SIMULATION_SPEC.md](file:///Users/orl123456/Documents/AoKira/SIMULATION_SPEC.md), [API_CONTRACT.md](file:///Users/orl123456/Documents/AoKira/API_CONTRACT.md), [DESIGN.md](file:///Users/orl123456/Documents/AoKira/DESIGN.md).
+**Related Canonical Docs:** [PRD.md](PRD.md), [SIMULATION_SPEC.md](SIMULATION_SPEC.md), [API_CONTRACT.md](API_CONTRACT.md), [DESIGN.md](DESIGN.md).
 
 ---
 

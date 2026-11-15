@@ -1,7 +1,7 @@
 # AoKira — Phased Implementation Flow
 
 **Document Role:** Canonical execution roadmap governing the complete project lifecycle from Phase 0 documentation lock through Phase 8 final deployment. Every phase specifies dependencies, deliverables, validation gates, and a strict Definition of Done (DoD).
-**Execution Rules:** Governed by [constraints.md](file:///Users/orl123456/Documents/AoKira/constraints.md). Verification details live in [TEST_PLAN.md](file:///Users/orl123456/Documents/AoKira/TEST_PLAN.md).
+**Execution Rules:** Governed by [constraints.md](constraints.md). Verification details live in [TEST_PLAN.md](TEST_PLAN.md).
 
 ---
 
@@ -130,7 +130,7 @@ Phase 2 (3D Workcell)     Phase 3 (Rust/WASM Engine)   Phase 5 (Python API)
 - **Deliverables:**
   - Full Playwright E2E regression suite (`E2E-01`..`E2E-05`) across desktop (`1440x900`) and mobile (`390x844`) (`AC-16`).
   - `FE-05` verification for `prefers-reduced-motion` and `WebGLFallbackView` (`AC-17`).
-  - Measured Phase 7 performance baseline report comparing observed FPS, WASM tick latency, IK solve duration, API response latency, and bundle size against targets in [TEST_PLAN.md](file:///Users/orl123456/Documents/AoKira/TEST_PLAN.md).
+  - Measured Phase 7 performance baseline report comparing observed FPS, WASM tick latency, IK solve duration, API response latency, and bundle size against targets in [TEST_PLAN.md](TEST_PLAN.md).
   - Defect resolution and UI/UX polish without scope creep.
 - **Validation Gate:** All `AC-01` through `AC-17` test cases pass cleanly on final candidate commits.
 - **Definition of Done:** Zero failing tests, zero skipped acceptance assertions, and observed performance baselines recorded truthfully.

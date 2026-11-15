@@ -1,7 +1,7 @@
 # AoKira — Implementation Progress Tracker
 
-**Current Phase:** Phase 6 Complete -> Starting Phase 7 (Playwright E2E & Performance Baselines)
-**Last Updated:** 2026-11-15
+**Current Phase:** Phases 1–8 Complete · Post-delivery: CI green, GitHub Pages live (https://orls967.github.io/AoKira/)
+**Last Updated:** 2026-11-16
 **Branch:** `main`
 **Remote:** `https://github.com/Orls967/AoKira.git`
 
@@ -53,8 +53,8 @@
 - [x] **Phase 2 (Core 3D Workcell)**: Complete (R3F workcell, WASM Worker bridge, `DigitalTwinPage` `FE-02` passing).
 - [x] **Phase 4 (Simulation Lab & Overview Showcase)**: Complete (`OverviewPage`, `SimulationLabPage`, `FE-01`, `npm test` 8/8 passing).
 - [x] **Phase 6 (Performance Analytics & Optimization Center UI)**: Complete (`apiClient`, `AnalyticsPage`, `OptimizationPage`, `FE-01..FE-05`, `scripts/test-all.sh` green).
-- [ ] **Phase 7 (Testing & Performance Baseline)**: Run Playwright E2E (`E2E-01`..`E2E-05` desktop & mobile), measure empirical runtime/build baselines, resolve any defects.
-- [ ] **Phase 8 (CI/CD & Final Delivery)**: Add `.github/workflows/ci-deploy.yml`, verify Docker & build configs, update `README.md`, push final commits, produce Final Report.
+- [x] **Phase 7 (Testing & Performance Baseline)**: Run Playwright E2E (`E2E-01`..`E2E-05` desktop & mobile), measure empirical runtime/build baselines, resolve any defects.
+- [x] **Phase 8 (CI/CD & Final Delivery)**: Add `.github/workflows/ci-deploy.yml`, verify Docker & build configs, update `README.md`, push final commits, produce Final Report.
 
 ---
 
@@ -95,3 +95,14 @@
 - Verified YAML workflow validity (`yaml.safe_load` parsed all 4 jobs cleanly) and verified `VITE_BASE_PATH=/AoKira/` production bundle rewrites `/AoKira/` assets, `/AoKira/favicon.svg`, and `/AoKira/assets/aokira_engine_bg-*.wasm`.
 - Checked local Docker availability (`docker info` reported daemon socket unavailable on macOS host; CI enforces Docker image smoke testing on Ubuntu runners).
 - Updated `README.md` with implemented workspace layout, verified local/CI setup commands, measured Phase 7/8 performance baselines, offline/synthetic disclaimers, and deployment guide.
+
+## Post-Delivery: CI Fixes, GitHub Pages Launch & README Gallery — DONE (2026-11-16)
+
+- **CI was red on `9e7fea5`** (Pages never deployed). Two causes, both fixed:
+  1. CI's `stable` toolchain (Rust 1.100) clippy flags `collapsible_match` in `production.rs` (local 1.93 did not). Folded the nested `if segment_just_finished` blocks into match guards; removed unused `serde-wasm-bindgen` dependency. Verified with `cargo +1.100.0 clippy --all-targets -- -D warnings`.
+  2. `RUST-PROD-06` compared the golden fixture byte-for-byte; Linux libm produces last-ULP differences in synthetic `energyWh` vs the macOS-generated fixture. The test now compares the JSON tree structurally: event order, integers, strings and booleans exact; non-integer numbers within `1e-12` relative.
+- Enabled GitHub Pages (`build_type=workflow`); all 4 CI jobs green and the site deploys from `main`.
+- Converted `file:///Users/...` absolute links in all docs to repository-relative links so they work on GitHub.
+- Added `apps/web/playwright.screenshots.config.ts` + `apps/web/screenshots/capture.spec.ts` (`npm run screenshots`) producing the README gallery in `docs/screenshots/` (live Pages for browser-only views, local full stack for Python-backed views).
+- Rewrote `README.md` (feature tour per page/option, run modes, scenario table, architecture diagrams, setup, CI, limitations) and set the GitHub repository About (description, homepage, topics).
+- **Observation recorded:** with default bounds the optimizer returns the same recommendation for `MIN_CYCLE_TIME`, `MIN_ENERGY_PER_UNIT` and `BALANCED` (idle-standby energy dominates, so faster is also cheaper per unit). Documented under README Known Limitations; not changed.

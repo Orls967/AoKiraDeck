@@ -1,7 +1,7 @@
 # AoKira — Design System & UI/UX Specification
 
 **Document Role:** Canonical source of truth for `AoKira`'s visual identity, 3-layer hybrid aesthetic, color and typography tokens, layout system, navigation, detailed UI/interaction specs for all 5 pages, 3D viewport & camera behavior, animation principles, responsiveness, accessibility, `prefers-reduced-motion`, and WebGL fallback.
-**Related Canonical Docs:** [PRD.md](file:///Users/orl123456/Documents/AoKira/PRD.md), [SIMULATION_SPEC.md](file:///Users/orl123456/Documents/AoKira/SIMULATION_SPEC.md), [DATA_MODEL.md](file:///Users/orl123456/Documents/AoKira/DATA_MODEL.md).
+**Related Canonical Docs:** [PRD.md](PRD.md), [SIMULATION_SPEC.md](SIMULATION_SPEC.md), [DATA_MODEL.md](DATA_MODEL.md).
 
 ---
 

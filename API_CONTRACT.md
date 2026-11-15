@@ -1,7 +1,7 @@
 # AoKira — TypeScript–Python API Contract
 
 **Document Role:** Canonical specification for HTTP/REST communication, versioning, endpoint routes, Pydantic/TypeScript schemas, validation rules, error envelopes, serialization conventions, example payloads, and backend-unavailable fallback behavior between `apps/web` and `apps/api`.
-**Referenced Entity Types:** Defined in [DATA_MODEL.md](file:///Users/orl123456/Documents/AoKira/DATA_MODEL.md).
+**Referenced Entity Types:** Defined in [DATA_MODEL.md](DATA_MODEL.md).
 
 ---
 

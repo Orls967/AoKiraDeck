@@ -1,6 +1,6 @@
 # AoKira — Engineering Constraints & Agent Execution Rules
 
-**Document Role:** Mandatory engineering guardrails, architectural boundaries, simulation invariants, Git hygiene rules, and autonomous execution protocols governing all implementation sessions (including Claude Code). Violations fail phase validation gates in [flow.md](file:///Users/orl123456/Documents/AoKira/flow.md).
+**Document Role:** Mandatory engineering guardrails, architectural boundaries, simulation invariants, Git hygiene rules, and autonomous execution protocols governing all implementation sessions (including Claude Code). Violations fail phase validation gates in [flow.md](flow.md).
 
 ---
 
@@ -27,7 +27,7 @@
 2. **IK Does Not Imply Collision-Free**: Inverse kinematics convergence validates pose reachability within joint bounds only. Collision detection (`collision` module) must run independently for planned trajectories and on every simulation tick.
 3. **Explicit Faults Over Silent Clamping**: Unreachable Cartesian targets or joint limit violations must return `UNREACHABLE_TARGET` or `JOINT_LIMIT_VIOLATION` without corrupting live joint state. Never silently clamp an invalid target into an approximate wrong pose during IK.
 4. **Event-Derived Metrics Only**: Every KPI on `Overview`, `Performance Analytics`, and `Optimization Center` must trace back to `SimulationEvent[]` and cumulative tick energy integrals. Hardcoded, static, or random placeholder KPIs are strictly prohibited.
-5. **No OEM Imitation & No Thermal Fiction**: Keep the generic 6-axis robot geometry defined in [SIMULATION_SPEC.md](file:///Users/orl123456/Documents/AoKira/SIMULATION_SPEC.md). Never introduce thermal simulation or brand-copied robot kinematics.
+5. **No OEM Imitation & No Thermal Fiction**: Keep the generic 6-axis robot geometry defined in [SIMULATION_SPEC.md](SIMULATION_SPEC.md). Never introduce thermal simulation or brand-copied robot kinematics.
 
 ---
 
@@ -35,12 +35,12 @@
 
 - **TypeScript (`apps/web`)**:
   - `"strict": true`, `"noUnusedLocals": true`, `"noUnusedParameters": true`, zero `any` types at module boundaries.
-  - Use Tailwind tokens defined in [DESIGN.md](file:///Users/orl123456/Documents/AoKira/DESIGN.md); enforce `tabular-nums` on numeric readouts.
+  - Use Tailwind tokens defined in [DESIGN.md](DESIGN.md); enforce `tabular-nums` on numeric readouts.
 - **Rust (`crates/aokira-engine`)**:
   - Must pass `cargo fmt --check` and `cargo clippy --all-targets -- -D warnings`.
   - Keep math modules pure, deterministic (`f64` internally), and unit-tested independently of `wasm-bindgen`.
 - **Python (`apps/api`)**:
-  - Python `3.12+` type annotations required everywhere; Pydantic v2 models must mirror [DATA_MODEL.md](file:///Users/orl123456/Documents/AoKira/DATA_MODEL.md) and [API_CONTRACT.md](file:///Users/orl123456/Documents/AoKira/API_CONTRACT.md) with `camelCase` JSON aliases.
+  - Python `3.12+` type annotations required everywhere; Pydantic v2 models must mirror [DATA_MODEL.md](DATA_MODEL.md) and [API_CONTRACT.md](API_CONTRACT.md) with `camelCase` JSON aliases.
   - Validate finite floats (`allow_nan=False` / explicit rejection of `NaN`/`Infinity`).
   - Pass `ruff check` and `pytest` cleanly.
 - **General Code Hygiene**:
