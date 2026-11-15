@@ -182,6 +182,15 @@ test.describe('AoKira End-to-End Verification (E2E-01..05)', () => {
     await page.getByRole('button', { name: /Run Optimization/i }).click();
     const recCard = page.getByTestId('recommended-config-card');
     await expect(recCard).toBeVisible();
+
+    // All three objectives must yield distinct recommendations on the trade-off map
+    await page.getByRole('button', { name: /Compare Objectives/i }).click();
+    const objectiveTable = page.getByTestId('objective-comparison');
+    await expect(objectiveTable).toBeVisible();
+    await expect(objectiveTable.locator('tbody tr')).toHaveCount(3);
+    const cycles = await objectiveTable.locator('tbody tr td:nth-child(5)').allTextContents();
+    expect(new Set(cycles).size).toBe(3);
+    await expect(page.getByTestId('tradeoff-map')).toBeVisible();
     expect(errors).toEqual([]);
 
     // Intentional negative & offline tests: assert zero uncaught page errors

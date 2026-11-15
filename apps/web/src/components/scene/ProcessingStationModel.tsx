@@ -70,7 +70,7 @@ export function ProcessingStationModel() {
       <mesh position={[station.originWorld.x, station.originWorld.y, station.originWorld.z]} castShadow receiveShadow>
         <boxGeometry args={[0.40, 0.72, 0.36]} />
         <meshStandardMaterial
-          color="#1E242B"
+          color="#3A4552"
           roughness={0.44}
           metalness={0.55}
           emissive={isHighlighted ? '#36C5D9' : '#000000'}
@@ -81,19 +81,19 @@ export function ProcessingStationModel() {
       {/* Top Machined Nest Plate */}
       <mesh position={[0, 0.722, -0.56]} receiveShadow>
         <boxGeometry args={[0.32, 0.006, 0.24]} />
-        <meshStandardMaterial color="#334155" roughness={0.32} metalness={0.78} />
+        <meshStandardMaterial color="#4B5A6B" roughness={0.32} metalness={0.78} />
       </mesh>
 
       {/* Rear Optical Scanner Column Head */}
       <mesh position={[0, 0.84, -0.71]} castShadow>
         <boxGeometry args={[0.16, 0.24, 0.06]} />
-        <meshStandardMaterial color="#334155" roughness={0.40} metalness={0.62} />
+        <meshStandardMaterial color="#4B5A6B" roughness={0.40} metalness={0.62} />
       </mesh>
 
       {/* Scanner Emitter Visor */}
       <mesh position={[0, 0.90, -0.64]} rotation={[0.25, 0, 0]} castShadow>
         <boxGeometry args={[0.14, 0.035, 0.14]} />
-        <meshStandardMaterial color="#1E242B" roughness={0.35} metalness={0.70} />
+        <meshStandardMaterial color="#3A4552" roughness={0.35} metalness={0.70} />
       </mesh>
 
       {/* Active Etch / Optical Scan Laser Curtain */}

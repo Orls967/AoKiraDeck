@@ -6,25 +6,30 @@ import {
   GitCompare,
   PlayCircle,
   RefreshCw,
+  Scale,
   ServerOff,
   Sparkles,
 } from 'lucide-react';
 import {
-  Bar,
-  BarChart,
   CartesianGrid,
   Legend,
   ResponsiveContainer,
+  Scatter,
+  ScatterChart,
   Tooltip,
   XAxis,
   YAxis,
+  ZAxis,
 } from 'recharts';
 import { PRESET_SCENARIOS } from '@/config/scenarios';
+import { apiClient } from '@/services/apiClient';
 import { useAnalyticsStore } from '@/stores/useAnalyticsStore';
 import { useSimulationStore } from '@/stores/useSimulationStore';
 import type {
   OptimizationBounds,
   OptimizationObjective,
+  OptimizationRunRequest,
+  OptimizationRunResponse,
   RankingObjective,
 } from '@/types/api';
 
@@ -35,6 +40,57 @@ const DEFAULT_BOUNDS: OptimizationBounds = {
   outputConveyorSpeedMps: [0.15, 0.5],
   processingDwellMs: [1200, 3500],
 };
+
+const OBJECTIVES: { id: OptimizationObjective; label: string; hint: string; color: string }[] = [
+  {
+    id: 'MIN_CYCLE_TIME',
+    label: 'Min Cycle',
+    hint: 'Fastest cycle: pushes speed and acceleration to their bounds.',
+    color: '#EF4444',
+  },
+  {
+    id: 'MIN_ENERGY_PER_UNIT',
+    label: 'Min Energy',
+    hint: 'Least Wh per part: gentler acceleration avoids I²R drive losses.',
+    color: '#22C55E',
+  },
+  {
+    id: 'BALANCED',
+    label: 'Balanced',
+    hint: 'Compromise between the two extremes, weighted 45 % time / 35 % energy.',
+    color: '#36C5D9',
+  },
+];
+
+const OBJECTIVE_BY_ID = Object.fromEntries(OBJECTIVES.map((o) => [o.id, o])) as Record<
+  OptimizationObjective,
+  (typeof OBJECTIVES)[number]
+>;
+
+interface TradeoffPoint {
+  name: string;
+  cycleMs: number;
+  energyWh: number;
+  throughput: number;
+}
+
+function TradeoffTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: { payload: TradeoffPoint }[];
+}) {
+  if (!active || !payload?.length) return null;
+  const p = payload[0].payload;
+  return (
+    <div className="rounded border border-[#243242] bg-[#141B23] px-2.5 py-1.5 font-mono text-[11px] text-[#CBD5E1]">
+      <p className="font-sans font-semibold text-[#F1F5F9]">{p.name}</p>
+      <p>{p.cycleMs.toFixed(0)} ms · {p.throughput.toFixed(1)} u/h</p>
+      <p>{p.energyWh.toFixed(3)} Wh/unit</p>
+    </div>
+  );
+}
 
 function mapObjectiveToRanking(obj: OptimizationObjective): RankingObjective {
   if (obj === 'MIN_CYCLE_TIME') return 'MIN_CYCLE_TIME';
@@ -66,6 +122,14 @@ export function OptimizationPage() {
   const [bounds, setBounds] = useState<OptimizationBounds>(DEFAULT_BOUNDS);
   const [minThroughput, setMinThroughput] = useState<number>(240);
   const [maxEnergyPerUnitWh, setMaxEnergyPerUnitWh] = useState<string>('');
+  // Process dwell is usually dictated by the process (curing, machining), so it is held at
+  // the base scenario's value unless the user explicitly opts in to tuning it.
+  const [tuneDwell, setTuneDwell] = useState<boolean>(false);
+  const [objectiveRuns, setObjectiveRuns] = useState<
+    Partial<Record<OptimizationObjective, OptimizationRunResponse>>
+  >({});
+  const [isComparingObjectives, setIsComparingObjectives] = useState(false);
+  const [objectiveRunsError, setObjectiveRunsError] = useState<string | null>(null);
 
   const availableScenarios = useMemo(() => {
     const existsInPresets = PRESET_SCENARIOS.some(
@@ -92,17 +156,26 @@ export function OptimizationPage() {
     });
   };
 
-  const handleRunOptimization = () => {
+  const effectiveBounds: OptimizationBounds = tuneDwell
+    ? bounds
+    : {
+        ...bounds,
+        processingDwellMs: [
+          selectedBaseScenario.processingDwellMs,
+          selectedBaseScenario.processingDwellMs,
+        ],
+      };
+
+  const buildRequest = (obj: OptimizationObjective): OptimizationRunRequest => {
     const parsedMaxEnergy = maxEnergyPerUnitWh.trim()
       ? Number(maxEnergyPerUnitWh.trim())
       : undefined;
-
-    void runOptimization({
+    return {
       baseScenario: selectedBaseScenario,
-      bounds,
-      objective,
+      bounds: effectiveBounds,
+      objective: obj,
       weights:
-        objective === 'BALANCED'
+        obj === 'BALANCED'
           ? { cycleTimeWeight: 0.45, energyWeight: 0.35, idleRatioWeight: 0.2 }
           : undefined,
       constraints: {
@@ -114,7 +187,27 @@ export function OptimizationPage() {
             : undefined,
       },
       maxEvaluations: 120,
-    });
+    };
+  };
+
+  const handleRunOptimization = () => {
+    void runOptimization(buildRequest(objective));
+  };
+
+  const handleCompareObjectives = async () => {
+    setIsComparingObjectives(true);
+    setObjectiveRunsError(null);
+    try {
+      const results = await Promise.all(
+        OBJECTIVES.map(async (o) => [o.id, await apiClient.runOptimization(buildRequest(o.id))] as const),
+      );
+      setObjectiveRuns(Object.fromEntries(results));
+    } catch (err) {
+      setObjectiveRuns({});
+      setObjectiveRunsError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setIsComparingObjectives(false);
+    }
   };
 
   const handleLoadIntoSimulationLab = (scenario = optimization?.recommendedScenario) => {
@@ -139,14 +232,55 @@ export function OptimizationPage() {
     });
   };
 
-  const chartData = useMemo(() => {
-    if (!comparison) return [];
-    return comparison.comparisons.map((c) => ({
-      name: c.scenarioId.toUpperCase(),
-      throughput: Number(c.throughputUnitsPerHour.toFixed(1)),
-      energyX100: Number((c.estimatedEnergyPerUnitWh * 100).toFixed(1)),
-    }));
-  }, [comparison]);
+  const presetPoints = useMemo<TradeoffPoint[]>(
+    () =>
+      (comparison?.comparisons ?? []).map((c) => ({
+        name: c.name,
+        cycleMs: c.cycleTimeMs,
+        energyWh: c.estimatedEnergyPerUnitWh,
+        throughput: c.throughputUnitsPerHour,
+      })),
+    [comparison],
+  );
+
+  const objectivePoints = useMemo(() => {
+    const runs: Partial<Record<OptimizationObjective, OptimizationRunResponse>> = {
+      ...objectiveRuns,
+    };
+    if (optimization && !runs[objective]) {
+      // Show the single run on the map too, under the objective it was launched with.
+      const launched = optimization.recommendedScenario.description.match(
+        /MIN_CYCLE_TIME|MIN_ENERGY_PER_UNIT|BALANCED/,
+      )?.[0] as OptimizationObjective | undefined;
+      if (launched && !runs[launched]) runs[launched] = optimization;
+    }
+    return OBJECTIVES.filter((o) => runs[o.id]).map((o) => {
+      const r = runs[o.id]!;
+      return {
+        objective: o,
+        run: r,
+        point: {
+          name: `${o.label} (optimized)`,
+          cycleMs: r.recommendedProjected.cycleTimeMs,
+          energyWh: r.recommendedProjected.energyPerUnitWh,
+          throughput: r.recommendedProjected.throughputUnitsPerHour,
+        } satisfies TradeoffPoint,
+      };
+    });
+  }, [objectiveRuns, optimization, objective]);
+
+  const baselinePoint = useMemo<TradeoffPoint | null>(() => {
+    const r = objectivePoints[0]?.run ?? optimization;
+    if (!r) return null;
+    return {
+      name: `${selectedBaseScenario.name} (baseline)`,
+      cycleMs: r.baselineProjected.cycleTimeMs,
+      energyWh: r.baselineProjected.energyPerUnitWh,
+      throughput: r.baselineProjected.throughputUnitsPerHour,
+    };
+  }, [objectivePoints, optimization, selectedBaseScenario.name]);
+
+  const hasTradeoffData = presetPoints.length > 0 || objectivePoints.length > 0;
 
   return (
     <section className="mx-auto flex w-full max-w-[1920px] flex-col gap-5 p-4 sm:p-6">
@@ -242,13 +376,7 @@ export function OptimizationPage() {
           <div>
             <span className="mb-1 block text-xs text-[#94A3B8]">Objective Function</span>
             <div className="grid grid-cols-3 gap-1.5">
-              {(
-                [
-                  { id: 'MIN_CYCLE_TIME', label: 'Min Cycle' },
-                  { id: 'MIN_ENERGY_PER_UNIT', label: 'Min Energy' },
-                  { id: 'BALANCED', label: 'Balanced' },
-                ] as { id: OptimizationObjective; label: string }[]
-              ).map((item) => (
+              {OBJECTIVES.map((item) => (
                 <button
                   key={item.id}
                   type="button"
@@ -264,6 +392,9 @@ export function OptimizationPage() {
                 </button>
               ))}
             </div>
+            <p className="mt-1.5 text-[11px] leading-snug text-[#94A3B8]">
+              {OBJECTIVE_BY_ID[objective].hint}
+            </p>
           </div>
 
           <div className="space-y-2.5 border-t border-[#243242] pt-3">
@@ -279,27 +410,48 @@ export function OptimizationPage() {
                 { key: 'outputConveyorSpeedMps', label: 'Output Belt (m/s)', step: 0.01 },
                 { key: 'processingDwellMs', label: 'Process Dwell (ms)', step: 100 },
               ] as { key: keyof OptimizationBounds; label: string; step: number }[]
-            ).map((row) => (
-              <div key={row.key} className="grid grid-cols-12 items-center gap-2 text-xs">
-                <span className="col-span-6 text-[#CBD5E1]">{row.label}</span>
-                <input
-                  type="number"
-                  aria-label={`${row.label} Min`}
-                  step={row.step}
-                  value={bounds[row.key][0]}
-                  onChange={(e) => updateBound(row.key, 0, Number(e.target.value))}
-                  className="col-span-3 rounded border border-[#243242] bg-[#0B0F14] px-2 py-1 font-mono text-[11px] text-[#F1F5F9] tabular-nums"
-                />
-                <input
-                  type="number"
-                  aria-label={`${row.label} Max`}
-                  step={row.step}
-                  value={bounds[row.key][1]}
-                  onChange={(e) => updateBound(row.key, 1, Number(e.target.value))}
-                  className="col-span-3 rounded border border-[#243242] bg-[#0B0F14] px-2 py-1 font-mono text-[11px] text-[#F1F5F9] tabular-nums"
-                />
-              </div>
-            ))}
+            ).map((row) => {
+              const locked = row.key === 'processingDwellMs' && !tuneDwell;
+              const pair = locked ? effectiveBounds.processingDwellMs : bounds[row.key];
+              return (
+                <div key={row.key} className="grid grid-cols-12 items-center gap-2 text-xs">
+                  <span className="col-span-6 text-[#CBD5E1]">{row.label}</span>
+                  <input
+                    type="number"
+                    aria-label={`${row.label} Min`}
+                    step={row.step}
+                    disabled={locked}
+                    value={pair[0]}
+                    onChange={(e) => updateBound(row.key, 0, Number(e.target.value))}
+                    className="col-span-3 rounded border border-[#243242] bg-[#0B0F14] px-2 py-1 font-mono text-[11px] text-[#F1F5F9] tabular-nums disabled:opacity-50"
+                  />
+                  <input
+                    type="number"
+                    aria-label={`${row.label} Max`}
+                    step={row.step}
+                    disabled={locked}
+                    value={pair[1]}
+                    onChange={(e) => updateBound(row.key, 1, Number(e.target.value))}
+                    className="col-span-3 rounded border border-[#243242] bg-[#0B0F14] px-2 py-1 font-mono text-[11px] text-[#F1F5F9] tabular-nums disabled:opacity-50"
+                  />
+                </div>
+              );
+            })}
+            <label className="flex items-start gap-2 pt-1 text-[11px] text-[#CBD5E1]">
+              <input
+                type="checkbox"
+                checked={tuneDwell}
+                onChange={(e) => setTuneDwell(e.target.checked)}
+                className="mt-0.5 accent-[#36C5D9]"
+              />
+              <span>
+                Optimize process dwell
+                <span className="block text-[10px] text-[#94A3B8]">
+                  Off: dwell stays at the base scenario's {selectedBaseScenario.processingDwellMs} ms
+                  (set by the process, not the robot).
+                </span>
+              </span>
+            </label>
           </div>
 
           <div className="space-y-2.5 border-t border-[#243242] pt-3">
@@ -360,6 +512,16 @@ export function OptimizationPage() {
 
             <button
               type="button"
+              disabled={isComparingObjectives || backendStatus !== 'ONLINE'}
+              onClick={() => void handleCompareObjectives()}
+              className="flex items-center justify-center gap-1.5 rounded border border-[#36C5D9]/50 bg-[#1C2631] px-3 py-2 text-xs font-semibold text-[#36C5D9] transition-colors hover:bg-[#36C5D9]/15 disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              <Scale className="h-3.5 w-3.5" />
+              {isComparingObjectives ? 'Running 3 Objectives...' : 'Compare Objectives'}
+            </button>
+
+            <button
+              type="button"
               onClick={() => handleLoadIntoSimulationLab(selectedBaseScenario)}
               className="flex items-center justify-center gap-1.5 rounded border border-[#243242] bg-[#0B0F14] px-3 py-1.5 text-xs font-medium text-[#CBD5E1] hover:border-[#36C5D9]/40"
             >
@@ -381,6 +543,16 @@ export function OptimizationPage() {
                   <span className="rounded bg-[#22C55E]/15 px-2 py-0.5 font-mono text-[10px] font-semibold text-[#22C55E]">
                     SLSQP OPTIMAL · {optimization.evaluationsRun} EVALUATIONS
                   </span>
+                  {(() => {
+                    const launched = optimization.recommendedScenario.description.match(
+                      /MIN_CYCLE_TIME|MIN_ENERGY_PER_UNIT|BALANCED/,
+                    )?.[0] as OptimizationObjective | undefined;
+                    return launched ? (
+                      <span className="ml-1.5 rounded bg-[#36C5D9]/15 px-2 py-0.5 font-mono text-[10px] font-semibold text-[#36C5D9]">
+                        {OBJECTIVE_BY_ID[launched].label.toUpperCase()}
+                      </span>
+                    ) : null;
+                  })()}
                   <h2 className="mt-1 font-display text-lg font-bold text-[#F1F5F9]">
                     Recommended Workcell Tuning
                   </h2>
@@ -474,6 +646,169 @@ export function OptimizationPage() {
             </div>
           )}
 
+          {/* Objective comparison + trade-off map */}
+          {(objectivePoints.length > 0 || objectiveRunsError) && (
+            <div data-testid="objective-comparison" className="panel-surface space-y-3 p-4 sm:p-5">
+              <div>
+                <h2 className="font-display text-sm font-semibold text-[#F1F5F9]">
+                  Objective Trade-off
+                </h2>
+                <p className="text-[11px] text-[#94A3B8]">
+                  Same bounds and constraints, three objectives. Faster cycles cost energy:
+                  aggressive acceleration adds resistive (I²R) drive losses.
+                </p>
+              </div>
+              {objectiveRunsError && (
+                <p className="font-mono text-xs text-[#FCA5A5]">{objectiveRunsError}</p>
+              )}
+              {objectivePoints.length > 0 && (
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[640px] border-collapse text-left font-mono text-xs">
+                    <thead>
+                      <tr className="border-b border-[#243242] text-[10px] uppercase text-[#94A3B8]">
+                        <th className="py-2 pr-3">Objective</th>
+                        <th className="py-2 pr-3">Speed / Accel</th>
+                        <th className="py-2 pr-3">Belts</th>
+                        <th className="py-2 pr-3">Dwell</th>
+                        <th className="py-2 pr-3">Cycle</th>
+                        <th className="py-2 pr-3">Throughput</th>
+                        <th className="py-2 pr-3">Energy/Unit</th>
+                        <th className="py-2">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {objectivePoints.map(({ objective: o, run }) => (
+                        <tr key={o.id} className="border-b border-[#1C2631] text-[#CBD5E1]">
+                          <td className="py-2 pr-3">
+                            <span
+                              className="mr-1.5 inline-block h-2 w-2 rounded-full"
+                              style={{ backgroundColor: o.color }}
+                            />
+                            <span className="font-sans font-medium text-[#F1F5F9]">{o.label}</span>
+                          </td>
+                          <td className="py-2 pr-3 tabular-nums">
+                            {run.recommendedScenario.robotSpeedScale.toFixed(2)}x /{' '}
+                            {run.recommendedScenario.robotAccelScale.toFixed(2)}x
+                          </td>
+                          <td className="py-2 pr-3 tabular-nums">
+                            {run.recommendedScenario.inputConveyorSpeedMps.toFixed(2)} /{' '}
+                            {run.recommendedScenario.outputConveyorSpeedMps.toFixed(2)} m/s
+                          </td>
+                          <td className="py-2 pr-3 tabular-nums">
+                            {run.recommendedScenario.processingDwellMs} ms
+                          </td>
+                          <td className="py-2 pr-3 tabular-nums">
+                            {run.recommendedProjected.cycleTimeMs.toFixed(0)} ms
+                          </td>
+                          <td className="py-2 pr-3 font-semibold text-[#F1F5F9] tabular-nums">
+                            {run.recommendedProjected.throughputUnitsPerHour.toFixed(1)} u/h
+                          </td>
+                          <td className="py-2 pr-3 tabular-nums">
+                            {run.recommendedProjected.energyPerUnitWh.toFixed(3)} Wh
+                          </td>
+                          <td className="py-2">
+                            <button
+                              type="button"
+                              onClick={() => handleLoadIntoSimulationLab(run.recommendedScenario)}
+                              className="rounded border border-[#243242] bg-[#0B0F14] px-2 py-1 text-[10px] text-[#36C5D9] hover:border-[#36C5D9]"
+                            >
+                              Load
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {hasTradeoffData && (
+            <div data-testid="tradeoff-map" className="panel-surface space-y-2 p-4 sm:p-5">
+              <div>
+                <h2 className="font-display text-sm font-semibold text-[#F1F5F9]">
+                  Cycle Time vs Energy per Unit
+                </h2>
+                <p className="text-[11px] text-[#94A3B8]">
+                  Lower-left is better. Preset scenarios, the baseline, and optimized results on one
+                  map.
+                </p>
+              </div>
+              <div className="h-[260px] w-full min-w-0">
+                <ResponsiveContainer width="100%" height="100%">
+                  <ScatterChart margin={{ top: 8, right: 16, bottom: 18, left: 4 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#243242" />
+                    <XAxis
+                      type="number"
+                      dataKey="cycleMs"
+                      name="Cycle time"
+                      unit=" ms"
+                      domain={['auto', 'auto']}
+                      stroke="#94A3B8"
+                      fontSize={11}
+                      tickFormatter={(v: number) => v.toFixed(0)}
+                      label={{
+                        value: 'Cycle time (ms)',
+                        position: 'insideBottom',
+                        offset: -10,
+                        fill: '#94A3B8',
+                        fontSize: 11,
+                      }}
+                    />
+                    <YAxis
+                      type="number"
+                      dataKey="energyWh"
+                      name="Energy"
+                      domain={['auto', 'auto']}
+                      stroke="#94A3B8"
+                      fontSize={11}
+                      width={56}
+                      tickFormatter={(v: number) => v.toFixed(2)}
+                      label={{
+                        value: 'Wh / unit',
+                        angle: -90,
+                        position: 'insideLeft',
+                        fill: '#94A3B8',
+                        fontSize: 11,
+                      }}
+                    />
+                    <ZAxis range={[90, 90]} />
+                    <Tooltip content={<TradeoffTooltip />} cursor={{ strokeDasharray: '3 3' }} />
+                    <Legend wrapperStyle={{ fontSize: '11px' }} verticalAlign="top" height={24} />
+                    {presetPoints.length > 0 && (
+                      <Scatter
+                        name="Preset scenarios"
+                        data={presetPoints}
+                        fill="#94A3B8"
+                        isAnimationActive={false}
+                      />
+                    )}
+                    {baselinePoint && (
+                      <Scatter
+                        name="Baseline"
+                        data={[baselinePoint]}
+                        fill="#F59E0B"
+                        shape="diamond"
+                        isAnimationActive={false}
+                      />
+                    )}
+                    {objectivePoints.map(({ objective: o, point }) => (
+                      <Scatter
+                        key={o.id}
+                        name={o.label}
+                        data={[point]}
+                        fill={o.color}
+                        shape="star"
+                        isAnimationActive={false}
+                      />
+                    ))}
+                  </ScatterChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+
           {/* Side-by-Side Scenario Comparison Table & Chart */}
           <div className="panel-surface space-y-4 p-4 sm:p-5">
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -560,30 +895,6 @@ export function OptimizationPage() {
                   </table>
                 </div>
 
-                <div className="h-[220px] w-full min-w-0 pt-2">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#243242" />
-                      <XAxis dataKey="name" stroke="#94A3B8" fontSize={11} />
-                      <YAxis stroke="#94A3B8" fontSize={11} />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: '#141B23',
-                          borderColor: '#243242',
-                          fontSize: '11px',
-                        }}
-                      />
-                      <Legend wrapperStyle={{ fontSize: '11px' }} />
-                      <Bar isAnimationActive={false} dataKey="throughput" name="Throughput (u/h)" fill="#36C5D9" />
-                      <Bar
-                        isAnimationActive={false}
-                        dataKey="energyX100"
-                        name="Energy (cWh = Wh x 100)"
-                        fill="#F59E0B"
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
               </>
             ) : (
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">

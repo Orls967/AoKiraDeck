@@ -170,4 +170,82 @@ describe('OptimizationPage', () => {
       'INFEASIBLE_OPTIMIZATION',
     );
   });
+  it('locks process dwell by default and compares all three objectives side by side', async () => {
+    const bodies: Array<{ objective: string; bounds: { processingDwellMs: [number, number] } }> =
+      [];
+    const projected: Record<string, { cycle: number; energy: number; speed: number }> = {
+      MIN_CYCLE_TIME: { cycle: 8860, energy: 0.802, speed: 1.4 },
+      MIN_ENERGY_PER_UNIT: { cycle: 10780, energy: 0.765, speed: 1.19 },
+      BALANCED: { cycle: 9380, energy: 0.78, speed: 1.4 },
+    };
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (_input, init) => {
+      const body = JSON.parse(String(init?.body));
+      bodies.push(body);
+      const p = projected[body.objective];
+      const scenario = {
+        ...DEFAULT_SCENARIO,
+        scenarioId: `baseline-a-optimized`,
+        description: `Optimized under ${body.objective} (40 surrogate evaluations).`,
+        robotSpeedScale: p.speed,
+      };
+      return new Response(
+        JSON.stringify({
+          feasible: true,
+          evaluationsRun: 40,
+          baselineProjected: {
+            cycleTimeMs: 11580,
+            throughputUnitsPerHour: 310.9,
+            energyPerUnitWh: 0.936,
+            idleRatioPct: 0.2,
+          },
+          recommendedScenario: scenario,
+          recommendedProjected: {
+            cycleTimeMs: p.cycle,
+            throughputUnitsPerHour: 3_600_000 / p.cycle,
+            energyPerUnitWh: p.energy,
+            idleRatioPct: 0.2,
+            bottleneckStage: 'ROBOT_TRANSIT',
+          },
+          deltas: { cycleTimePct: -10, throughputPct: 10, energyPerUnitPct: -10 },
+          topCandidates: [],
+          note: 'ok',
+        }),
+        { status: 200 },
+      );
+    });
+
+    render(
+      <MemoryRouter>
+        <OptimizationPage />
+      </MemoryRouter>,
+    );
+
+    // Dwell bounds are pinned to the base scenario until the user opts in.
+    expect(screen.getByLabelText('Process Dwell (ms) Min')).toBeDisabled();
+
+    fireEvent.click(screen.getByRole('button', { name: /Compare Objectives/i }));
+    await waitFor(() => {
+      expect(screen.getByTestId('objective-comparison')).toBeInTheDocument();
+    });
+    expect(bodies.map((b) => b.objective).sort()).toEqual([
+      'BALANCED',
+      'MIN_CYCLE_TIME',
+      'MIN_ENERGY_PER_UNIT',
+    ]);
+    for (const b of bodies) {
+      expect(b.bounds.processingDwellMs).toEqual([
+        DEFAULT_SCENARIO.processingDwellMs,
+        DEFAULT_SCENARIO.processingDwellMs,
+      ]);
+    }
+    const table = screen.getByTestId('objective-comparison');
+    expect(table).toHaveTextContent('10780 ms');
+    expect(table).toHaveTextContent('0.765 Wh');
+    expect(screen.getByTestId('tradeoff-map')).toBeInTheDocument();
+
+    // Opting in releases the dwell bounds.
+    fireEvent.click(screen.getByLabelText(/Optimize process dwell/i));
+    expect(screen.getByLabelText('Process Dwell (ms) Min')).toBeEnabled();
+  });
 });
+

@@ -155,7 +155,7 @@ export function EnvironmentRig() {
       {/* Matte Industrial Factory Floor + Precision 0.25 m / 1.0 m Grid */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.001, 0]} receiveShadow>
         <planeGeometry args={[12, 12]} />
-        <meshStandardMaterial color="#0F141B" roughness={0.92} metalness={0.05} />
+        <meshStandardMaterial color="#151C26" roughness={0.9} metalness={0.05} />
       </mesh>
       <gridHelper args={[6.4, 16, '#2D3C4E', '#18212C']} position={[0, 0.001, 0]} />
       {showCoordinateFrames && <axesHelper args={[0.45]} />}
@@ -179,7 +179,7 @@ export function EnvironmentRig() {
               ]}
             />
             <meshStandardMaterial
-              color="#1E242B"
+              color="#3A4552"
               roughness={0.48}
               metalness={0.55}
               emissive={
@@ -193,7 +193,7 @@ export function EnvironmentRig() {
           {/* Anchoring Base Flange Plate */}
           <mesh position={[0, 0.015, 0]} receiveShadow>
             <boxGeometry args={[0.52, 0.03, 0.52]} />
-            <meshStandardMaterial color="#334155" roughness={0.45} metalness={0.65} />
+            <meshStandardMaterial color="#4B5A6B" roughness={0.45} metalness={0.65} />
           </mesh>
         </group>
       )}
@@ -211,13 +211,16 @@ export function EnvironmentRig() {
                   args={[bx.halfExtents.x * 2, bx.halfExtents.y * 2, bx.halfExtents.z * 2]}
                 />
                 <meshStandardMaterial
-                  color="#334155"
+                  color="#4B5A6B"
                   transparent
                   opacity={
                     selectedId === 'safety-fence' || hoveredId === 'safety-fence' ? 0.26 : 0.12
                   }
                   roughness={0.3}
                   metalness={0.4}
+                  // Transparent panels must not write depth, otherwise they occlude everything
+                  // behind them and render as solid dark slabs.
+                  depthWrite={false}
                 />
               </mesh>
               <mesh>
@@ -244,7 +247,8 @@ export function EnvironmentRig() {
           ].map(([px, pz]) => (
             <mesh key={`${px}-${pz}`} position={[px, 0.75, pz]} castShadow>
               <boxGeometry args={[0.07, 1.5, 0.07]} />
-              <meshStandardMaterial color="#1E242B" roughness={0.45} metalness={0.65} />
+              {/* Powder-coated safety-yellow guard posts, as on real robot cell fencing */}
+              <meshStandardMaterial color="#CA8A04" roughness={0.55} metalness={0.25} />
             </mesh>
           ))}
         </group>
@@ -269,7 +273,7 @@ export function EnvironmentRig() {
               ]}
             />
             <meshStandardMaterial
-              color="#1E242B"
+              color="#3A4552"
               roughness={0.45}
               metalness={0.55}
               emissive={
@@ -306,7 +310,7 @@ export function EnvironmentRig() {
             <boxGeometry args={[0.04, 0.05, 0.025]} />
             <meshStandardMaterial
               ref={inputLedRef}
-              color="#334155"
+              color="#4B5A6B"
               roughness={0.3}
               metalness={0.6}
             />
@@ -316,7 +320,7 @@ export function EnvironmentRig() {
             <boxGeometry args={[0.025, 0.05, 0.04]} />
             <meshStandardMaterial
               ref={stationLedRef}
-              color="#334155"
+              color="#4B5A6B"
               roughness={0.3}
               metalness={0.6}
             />
@@ -326,7 +330,7 @@ export function EnvironmentRig() {
             <boxGeometry args={[0.04, 0.05, 0.025]} />
             <meshStandardMaterial
               ref={outputLedRef}
-              color="#334155"
+              color="#4B5A6B"
               roughness={0.3}
               metalness={0.6}
             />

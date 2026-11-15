@@ -101,11 +101,11 @@ function SingleConveyorMesh({ componentId, config, explodeOffsetX }: SingleConve
       {/* Anodized Slate Side Rails */}
       <mesh position={[0, 0.015, config.widthMeters * 0.5 + 0.012]} castShadow>
         <boxGeometry args={[config.lengthMeters + 0.02, boxH + 0.03, 0.022]} />
-        <meshStandardMaterial color="#334155" roughness={0.45} metalness={0.55} />
+        <meshStandardMaterial color="#4B5A6B" roughness={0.45} metalness={0.55} />
       </mesh>
       <mesh position={[0, 0.015, -config.widthMeters * 0.5 - 0.012]} castShadow>
         <boxGeometry args={[config.lengthMeters + 0.02, boxH + 0.03, 0.022]} />
-        <meshStandardMaterial color="#334155" roughness={0.45} metalness={0.55} />
+        <meshStandardMaterial color="#4B5A6B" roughness={0.45} metalness={0.55} />
       </mesh>
 
       {/* Support Legs down to y = 0 */}
@@ -113,7 +113,7 @@ function SingleConveyorMesh({ componentId, config, explodeOffsetX }: SingleConve
         [-0.09, 0.09].map((lz) => (
           <mesh key={`${lx}-${lz}`} position={[lx, -cy * 0.5 - 0.025, lz]} castShadow receiveShadow>
             <boxGeometry args={[0.045, cy - 0.05, 0.045]} />
-            <meshStandardMaterial color="#1E242B" roughness={0.5} metalness={0.55} />
+            <meshStandardMaterial color="#3A4552" roughness={0.5} metalness={0.55} />
           </mesh>
         )),
       )}

@@ -257,14 +257,20 @@ test.describe('With FastAPI backend (local)', () => {
     await settle(page, 1500);
     await shot(page, '05-optimization-compare', { fullPage: true });
 
-    // With the default bounds all three objectives converge to the same corner of the search
-    // space (idle-standby energy dominates), so one recommendation card is enough.
     await page.getByRole('button', { name: 'Balanced', exact: true }).click();
     await page.getByRole('button', { name: /Run Optimization/i }).click();
     const card = page.getByTestId('recommended-config-card');
     await expect(card).toBeVisible();
     await settle(page, 1500);
     await shotOf(card, '05-optimization-result');
+
+    // Min Cycle vs Balanced vs Min Energy on the same bounds, plus the trade-off map.
+    await page.getByRole('button', { name: /Compare Objectives/i }).click();
+    const objectives = page.getByTestId('objective-comparison');
+    await expect(objectives.locator('tbody tr')).toHaveCount(3);
+    await settle(page, 1500);
+    await shotOf(objectives, '05-optimization-objectives');
+    await shotOf(page.getByTestId('tradeoff-map'), '05-optimization-tradeoff-map');
     await shot(page, '05-optimization-recommendation', { fullPage: true });
 
     await page.getByLabel(/Min Throughput/i).fill('100000');

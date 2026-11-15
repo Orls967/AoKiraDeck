@@ -99,7 +99,7 @@ export function RobotArmModel() {
         : col?.severity === 'NEAR_COLLISION'
           ? 0.42
           : selectedId === 'robot-arm' || hoveredId === 'robot-arm'
-            ? 0.20
+            ? 0.08 // subtle: a strong cyan emissive turns the safety orange salmon-pink
             : 0.0;
     for (const mat of orangeMatRefs.current) {
       if (mat) {
