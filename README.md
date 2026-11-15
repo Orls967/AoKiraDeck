@@ -38,6 +38,7 @@ Interactive 3D manufacturing simulation, robot motion planning and production op
   - [Mobile layout](#mobile-layout)
   - [REST API (Swagger)](#rest-api-swagger)
 - [Scenario presets](#scenario-presets)
+- [Energy model & optimizer](#energy-model--optimizer)
 - [How it works](#how-it-works)
 - [Tech stack](#tech-stack)
 - [Repository structure](#repository-structure)
@@ -208,15 +209,16 @@ Charts: per-cycle stage timing breakdown, cycle throughput and energy trend, and
 
 ### 05 · Optimization Center
 
-Compare scenarios and search for better workcell parameters with SciPy SLSQP under a zero-collision constraint.
+Compare scenarios and search for better workcell parameters with SciPy SLSQP under a zero-collision constraint. The three objectives produce **genuinely different** recommendations, because the energy model includes resistive (I²R) drive losses that grow with acceleration squared. Faster motion cuts cycle time but costs energy per part.
 
 | Control | Options |
 |---|---|
 | **Base scenario** | Scenario A–D |
-| **Objective function** | `Min Cycle` · `Min Energy` · `Balanced` |
+| **Objective function** | `Min Cycle` (fastest cycle) · `Min Energy` (least Wh per part: gentler acceleration) · `Balanced` (compromise between the two extremes, weighted 45 % time / 35 % energy over the real trade-off range) |
 | **Search bounds** | min/max for robot speed scale, robot accel scale, input belt, output belt, process dwell |
-| **Constraints** | min throughput (units/h), optional max energy per unit (Wh). The zero-collision constraint is always enforced. |
-| **Actions** | `Compare Scenarios (A–D)` · `Run Optimization` · `Load Base Preset Locally` · per-row `Load` · `Load into Simulation Lab` |
+| **Optimize process dwell** | Off by default: dwell stays at the base scenario's value, because it is set by the process (curing, machining), not by the robot. Turn it on to let the optimizer tune it too. |
+| **Constraints** | min throughput (units/h), optional max energy per unit (Wh). Zero collisions is always enforced: the engine's belt interlocks keep every corner of the allowed parameter range collision-free (`RUST-PROD-07`). |
+| **Actions** | `Compare Scenarios (A–D)` · `Run Optimization` · `Compare Objectives` (runs all three) · `Load Base Preset Locally` · per-row `Load` · `Load into Simulation Lab` |
 
 <table>
 <tr>
@@ -225,8 +227,16 @@ Compare scenarios and search for better workcell parameters with SciPy SLSQP und
 </tr>
 </table>
 
-![Optimization recommendation](docs/screenshots/05-optimization-recommendation.png)
-<sub><b>Run Optimization</b> (Balanced): recommended tuning with projected cycle time, throughput and energy per unit compared with the baseline (full stack)</sub>
+![Optimization Center full page](docs/screenshots/05-optimization-recommendation.png)
+<sub>Full page after <b>Run Optimization</b> (Balanced), <b>Compare Objectives</b> and <b>Compare Scenarios</b> (full stack)</sub>
+
+**Compare Objectives.** Same bounds and constraints, three objectives, side by side. Here the dwell is locked at 2500 ms. Min Cycle pushes speed and acceleration to the limit (1.40× / 1.40×). Min Energy slows the arm down, especially its acceleration (1.18× / 0.78×), and saves about 4 % energy per part at 16 % lower throughput. Balanced sits in between.
+
+![Objective comparison table](docs/screenshots/05-optimization-objectives.png)
+
+**Trade-off map.** Cycle time against energy per part for the preset scenarios, the baseline and each optimized result; lower-left is better.
+
+![Cycle time vs energy trade-off map](docs/screenshots/05-optimization-tradeoff-map.png)
 
 <table>
 <tr>
@@ -282,7 +292,35 @@ Defined in [`data/scenarios/`](data/scenarios) and shared by the engine, the API
 | `optimized-traj-c` | Scenario C: Optimized Trajectory | 1.25× | 1.15× | 0.35 / 0.35 m/s | 1800 ms | Smoother motion, faster feed, shorter dwell |
 | `conveyor-tuned-d` | Scenario D: Adjusted Conveyor Speed | 1.00× | 1.00× | 0.45 / 0.45 m/s | 2500 ms | Faster belts to avoid starvation |
 
+All presets target **330 units/h** (takt ≈ 10.9 s), slightly above what the baseline cell can do (~311 u/h). This keeps the *production efficiency* KPI meaningful: the baseline reaches about 90 %, and tuned configurations reach 100 %.
+
 The single source of truth for geometry, DH parameters, joint limits and component metadata is [`data/workcell/aokira-workcell.v1.json`](data/workcell/aokira-workcell.v1.json).
+
+---
+
+## Energy model & optimizer
+
+The engine adds up synthetic power every 20 ms tick ([SIMULATION_SPEC.md §7.2](SIMULATION_SPEC.md)):
+
+```
+P = 120 W idle
+  + Σ joints ( 0.35·τ·|q̇| + 0.04·τ·|q̈| + 0.010·τ·q̈² )   ← q̈² = resistive (I²R) drive loss
+  + 18 W/kg · m_held · max(‖q̇‖, 0.1)                      ← payload
+  + 65 W per running conveyor + 180 W while the station processes
+```
+
+The **I²R term** is what creates a real trade-off. Without it, idle power dominates and the fastest setting is always the most efficient one, so every objective chose the same corner. With it, energy per part has a U-shaped minimum around 1.0× speed. The numbers below come from the Rust engine (`cargo run --release --example energy_sweep`; belts 0.5 m/s, dwell 1200 ms):
+
+| Speed = accel | 0.5× | 0.8× | **1.0×** | 1.2× | 1.4× |
+|---|---|---|---|---|---|
+| Cycle time | 15.6 s | 11.5 s | 10.3 s | 9.4 s | 8.9 s |
+| Energy / part | 0.868 Wh | 0.780 Wh | **0.772 Wh** | 0.781 Wh | 0.797 Wh |
+
+The **optimizer** works in three steps:
+
+1. It uses a closed-form **surrogate** of the engine ([`surrogate.py`](apps/api/app/analytics/surrogate.py)) that integrates the same power terms over each quintic segment. The surrogate uses the canonical joint limits (checked by a test) and is calibrated against the engine: it stays within 1 % for cycle time and 0.8 % for energy across a 60-point grid.
+2. It runs a seeded multi-start search followed by **SciPy SLSQP** in normalised coordinates. `Min Energy` lands within 0.1 % of a `differential_evolution` global reference.
+3. For `Balanced`, it first finds the two extremes (fastest and leanest), scales cycle time and energy by the real gap between them, and then applies the weights.
 
 ---
 
@@ -327,7 +365,7 @@ stateDiagram-v2
 Key design points:
 
 1. **Determinism.** The same workcell config and scenario (including seed) give the same event stream, timings and KPIs, whatever the display refresh rate. A committed golden fixture ([`data/fixtures/baseline-3cycles.golden.json`](data/fixtures/baseline-3cycles.golden.json)) guards this in CI.
-2. **Off the UI thread.** The engine runs inside a dedicated Web Worker. Live snapshots are kept in refs outside React state, so the 3D scene renders at full frame rate.
+2. **Off the UI thread.** The engine runs inside a dedicated Web Worker. Live snapshots are kept in refs outside React state, so the 3D scene renders at full frame rate. On CPU-only WebGL (VMs, GPU acceleration disabled) the scene automatically drops its environment map and shadows to stay interactive.
 3. **Graceful degradation.** API calls have strict timeouts (3 s / 10 s / 20 s). If the API fails, the UI shows explicit offline badges, and the simulation itself never stops.
 4. **Contract parity.** TypeScript types and Pydantic v2 schemas mirror each other in camelCase. The API recomputes KPIs and reports the client/server difference (`< 0.01 %`).
 
@@ -451,10 +489,10 @@ cd apps/web && npm run typecheck && npm run test && npm run test:e2e   # E2E nee
 
 | Suite | Coverage |
 |---|---|
-| **Rust** (22 tests) | FK home and extremal poses, IK round-trip and unreachable cases, quintic velocity/acceleration limits, collision primitives and near-miss, production state machine, golden fixture regression |
-| **Python** (8 tests) | Smoke + API contract `API-01..07`: health & CORS, evaluate (golden-fixture parity), invalid-input rejection, scenario ranking, optimization within bounds, infeasible domain error, statelessness/determinism |
-| **Web** (13 tests) | `FE-01..05`: Simulation Lab transport/fault, Digital Twin tree & selection, Analytics empty + offline, Optimization compare/run/infeasible, reduced-motion & WebGL 2D fallback, routing & config loading |
-| **E2E** (5 tests) | `E2E-01..05` in real Chrome + WebGL against Uvicorn: overview, twin, full cycle → analytics, optimization + offline, mobile 390×844 |
+| **Rust** (23 tests) | FK home and extremal poses, IK round-trip and unreachable cases, quintic velocity/acceleration limits, collision primitives and near-miss, production state machine, golden fixture regression, zero collisions at all 16 corners of the allowed parameter range |
+| **Python** (13 tests) | Smoke + API contract `API-01..07`: health & CORS, evaluate (golden-fixture parity), invalid-input rejection, scenario ranking, optimization within bounds, infeasible domain error, statelessness/determinism. `API-08..10`: surrogate constants match the workcell config, surrogate within 2 % of the Rust golden fixture, three objectives give distinct results with Balanced in between, Min Energy reaches the global optimum, a locked dwell is respected |
+| **Web** (14 tests) | `FE-01..05`: Simulation Lab transport/fault, Digital Twin tree & selection, Analytics empty + offline, Optimization compare/run/infeasible/dwell lock/Compare Objectives, reduced-motion & WebGL 2D fallback, routing & config loading |
+| **E2E** (5 tests) | `E2E-01..05` in real Chrome + WebGL against Uvicorn: overview, twin, full cycle → analytics, optimization (including three distinct objective results) + offline, mobile 390×844 |
 
 **GitHub Actions** ([`ci-deploy.yml`](.github/workflows/ci-deploy.yml)) runs on every push and PR to `main`: `rust-and-wasm` → `python-api` (including the Docker health smoke test) → `web-and-e2e` (including Playwright and the `/AoKira/` Pages bundle with a `404.html` SPA fallback) → `deploy-pages` (on `main` only).
 
@@ -483,8 +521,9 @@ Measured on a local Apple Silicon machine (Phase 7 baseline):
 | Rust: IK unreachable rejection | `0.0013 ms` |
 | FastAPI `POST /analytics/evaluate`, 1,000 events | `22.6 ms` |
 | FastAPI `POST /optimization/run`, SLSQP | `7.8 ms` |
-| WebGL canvas frame rate (`E2E-01`) | `~60 FPS` |
+| WebGL canvas frame rate (`E2E-01`) | `~60 FPS` on a GPU; `6–12 FPS` on CPU-only WebGL (SwiftShader) thanks to adaptive quality |
 | WASM binary (`aokira_engine_bg.wasm`) | `270 kB` raw / `109 kB` gzip |
+| Landing-page JS | Recharts (`113 kB` gzip) is lazy-loaded only on Analytics / Optimization |
 
 ---
 
@@ -509,7 +548,7 @@ Measured on a local Apple Silicon machine (Phase 7 baseline):
 
 1. **Synthetic physics and energy.** Conveyor transport, rigid grasp attachment, capsule/box collision and power estimates are simplified demonstrator models. They are not rigid-body physics, mesh-exact contact or calibrated metering.
 2. **The hosted demo has no backend.** GitHub Pages serves static files only, so Python enrichment and optimization need a locally running (or separately deployed) API.
-3. **Optimizer objectives converge with default bounds.** With the default search bounds, `Min Cycle`, `Min Energy` and `Balanced` all recommend the same corner of the space (max speed and acceleration, fastest belts, shortest dwell). This is because the synthetic idle-standby power dominates energy per unit, so finishing faster is also cheaper. Tighter bounds or an energy cap make the objectives separate.
+3. **Conveyor power is speed-independent.** A belt draws 65 W whenever it runs, so faster belts always look slightly cheaper, and belts never limit throughput in this cell. The optimizer therefore always picks the fastest belts.
 4. **Stateless API.** There are no user accounts, persistence or multi-user collaboration.
 5. **Locale-formatted inputs.** Numeric inputs follow the browser locale (for example `0,5` instead of `0.5`).
 

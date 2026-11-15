@@ -19,6 +19,9 @@ async function settle(page: Page, ms = 1200) {
 }
 
 async function shot(page: Page, name: string, opts: { fullPage?: boolean } = {}) {
+  // A sticky header would be stamped mid-page in a full-page capture taken while scrolled.
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(150);
   await page.screenshot({ path: file(name), fullPage: opts.fullPage ?? false });
 }
 
