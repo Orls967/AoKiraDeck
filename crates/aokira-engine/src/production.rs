@@ -831,27 +831,25 @@ impl ProductionMachine {
                         self.subphase = StageSubphase::Retracting;
                     }
                 }
-                StageSubphase::Retracting => {
-                    if segment_just_finished {
-                        let q_target = self.waypoints.q_station_approach;
-                        if let Err((code, msg)) = self.plan_segment_to(q_target) {
-                            self.trigger_fault(
-                                code,
-                                Some("robot-arm".to_string()),
-                                msg,
-                                SimulationEventType::JointLimitViolated,
-                                out_events,
-                            );
-                            return;
-                        }
-                        self.transition_stage(
-                            ProductionStage::TransferToStation,
-                            StageSubphase::Moving,
+                StageSubphase::Retracting if segment_just_finished => {
+                    let q_target = self.waypoints.q_station_approach;
+                    if let Err((code, msg)) = self.plan_segment_to(q_target) {
+                        self.trigger_fault(
+                            code,
                             Some("robot-arm".to_string()),
-                            "Transferring workpiece to processing station approach",
+                            msg,
+                            SimulationEventType::JointLimitViolated,
                             out_events,
                         );
+                        return;
                     }
+                    self.transition_stage(
+                        ProductionStage::TransferToStation,
+                        StageSubphase::Moving,
+                        Some("robot-arm".to_string()),
+                        "Transferring workpiece to processing station approach",
+                        out_events,
+                    );
                 }
                 _ => {}
             },
@@ -1053,27 +1051,25 @@ impl ProductionMachine {
                         self.subphase = StageSubphase::Retracting;
                     }
                 }
-                StageSubphase::Retracting => {
-                    if segment_just_finished {
-                        let q_target = self.waypoints.q_output_approach;
-                        if let Err((code, msg)) = self.plan_segment_to(q_target) {
-                            self.trigger_fault(
-                                code,
-                                Some("robot-arm".to_string()),
-                                msg,
-                                SimulationEventType::JointLimitViolated,
-                                out_events,
-                            );
-                            return;
-                        }
-                        self.transition_stage(
-                            ProductionStage::TransferToOutput,
-                            StageSubphase::Moving,
+                StageSubphase::Retracting if segment_just_finished => {
+                    let q_target = self.waypoints.q_output_approach;
+                    if let Err((code, msg)) = self.plan_segment_to(q_target) {
+                        self.trigger_fault(
+                            code,
                             Some("robot-arm".to_string()),
-                            "Transferring finished workpiece toward output conveyor",
+                            msg,
+                            SimulationEventType::JointLimitViolated,
                             out_events,
                         );
+                        return;
                     }
+                    self.transition_stage(
+                        ProductionStage::TransferToOutput,
+                        StageSubphase::Moving,
+                        Some("robot-arm".to_string()),
+                        "Transferring finished workpiece toward output conveyor",
+                        out_events,
+                    );
                 }
                 _ => {}
             },
@@ -1142,10 +1138,8 @@ impl ProductionMachine {
                         self.subphase = StageSubphase::Retracting;
                     }
                 }
-                StageSubphase::Retracting => {
-                    if segment_just_finished {
-                        self.complete_active_cycle(out_events);
-                    }
+                StageSubphase::Retracting if segment_just_finished => {
+                    self.complete_active_cycle(out_events);
                 }
                 _ => {}
             },
