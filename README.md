@@ -1,5 +1,7 @@
 <div align="center">
 
+**English | [Bahasa Indonesia](README.id.md)**
+
 # AoKira
 
 ### Industrial Robotic Workcell Digital Twin
@@ -528,6 +530,8 @@ Measured on a local Apple Silicon machine (Phase 7 baseline):
 ---
 
 ## Documentation index
+
+Every document below also has an Indonesian translation (Bahasa Indonesia) in [`docs/id/`](docs/id), with the same file names.
 
 | Document | Covers |
 |---|---|
