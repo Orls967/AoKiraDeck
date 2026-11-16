@@ -187,10 +187,10 @@ jobs:
           done
           ./node_modules/.bin/playwright test
 
-      - name: Build GitHub Pages production bundle (/AoKira/)
+      - name: Build GitHub Pages production bundle (/AoKiraDeck/)
         working-directory: apps/web
         env:
-          VITE_BASE_PATH: /AoKira/
+          VITE_BASE_PATH: /AoKiraDeck/
           VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
         run: |
           npm run build

@@ -34,7 +34,7 @@ Phase 2 (3D Workcell)     Phase 3 (Rust/WASM Engine)   Phase 5 (Python API)
 ## 2. Detailed Phase Specifications
 
 ### Phase 0 — Repository Audit & Documentation Lock *(Current Phase)*
-- **Entry Criteria:** Valid GitHub repository (`Orls967/AoKira`) verified; project name (`AoKira`) confirmed.
+- **Entry Criteria:** Valid GitHub repository (`Orls967/AoKiraDeck`) verified; project name (`AoKira`) confirmed.
 - **Deliverables:** Complete cross-audited documentation package (`PRD.md`, `DATA_MODEL.md`, `SIMULATION_SPEC.md`, `ARCHITECTURE.md`, `API_CONTRACT.md`, `DESIGN.md`, `TEST_PLAN.md`, `flow.md`, `constraints.md`, `README.md`) committed incrementally.
 - **Validation Gate:** Cross-document consistency audit passes with zero conflicting parameters, schema mismatches, or unverified claims.
 - **Definition of Done:** All 10 documents committed cleanly on `main`; explicit user sign-off received prior to writing application code.
@@ -140,7 +140,7 @@ Phase 2 (3D Workcell)     Phase 3 (Rust/WASM Engine)   Phase 5 (Python API)
 ### Phase 8 — Final Delivery & Deployment (`AC-18`)
 - **Depends On:** Phase 7.
 - **Deliverables:**
-  - GitHub Actions workflow `.github/workflows/ci-deploy.yml` running Rust `cargo test`, Python `pytest`, Web `vitest` + `vite build`, and GitHub Pages artifact deployment for `https://orls967.github.io/AoKira/`.
+  - GitHub Actions workflow `.github/workflows/ci-deploy.yml` running Rust `cargo test`, Python `pytest`, Web `vitest` + `vite build`, and GitHub Pages artifact deployment for `https://orls967.github.io/AoKiraDeck/`.
   - Containerized Python backend deployment configuration & health verification instructions.
   - Final `README.md` command & live URL verification and Phase 8 Delivery Report.
 - **Validation Gate:** Clean CI build/test pass + verified deployed frontend & container backend behavior (`AC-18`).

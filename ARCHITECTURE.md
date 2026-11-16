@@ -179,7 +179,7 @@ The dedicated worker (`apps/web/src/workers/simulation.worker.ts`) instantiates 
 ## 8. Deployment & Performance Architecture
 
 ### 8.1 Deployment Topology
-- **Frontend + Rust/WASM**: Built via Vite + `wasm-pack` in GitHub Actions and published to **GitHub Pages** (`https://orls967.github.io/AoKira/` with Vite `base: '/AoKira/'` configured via environment variable).
+- **Frontend + Rust/WASM**: Built via Vite + `wasm-pack` in GitHub Actions and published to **GitHub Pages** (`https://orls967.github.io/AoKiraDeck/` with Vite `base: '/AoKiraDeck/'` configured via environment variable).
 - **Python Backend**: Packaged via `apps/api/Dockerfile` (multi-stage Python slim image running `uvicorn app.main:app`) for container hosting (e.g., Cloud Run / Fly.io / Railway / Render / local Docker Compose). CORS origins explicitly allow local dev (`http://localhost:5173`) and the GitHub Pages origin (`https://orls967.github.io`).
 - **Configuration Injection**: Frontend reads `VITE_API_BASE_URL` at build time; if unset, backend status gracefully enters `Unavailable` / `Not Configured` while local WASM simulation remains 100% functional.
 

@@ -8,13 +8,13 @@
 
 Interactive 3D manufacturing simulation, robot motion planning and production optimization: entirely in the browser.
 
-[![CI & Pages](https://github.com/Orls967/AoKira/actions/workflows/ci-deploy.yml/badge.svg)](https://github.com/Orls967/AoKira/actions/workflows/ci-deploy.yml)
-[![Live Demo](https://img.shields.io/badge/live%20demo-GitHub%20Pages-36C5D9?logo=github)](https://orls967.github.io/AoKira/)
+[![CI & Pages](https://github.com/Orls967/AoKiraDeck/actions/workflows/ci-deploy.yml/badge.svg)](https://github.com/Orls967/AoKiraDeck/actions/workflows/ci-deploy.yml)
+[![Live Demo](https://img.shields.io/badge/live%20demo-GitHub%20Pages-36C5D9?logo=github)](https://orls967.github.io/AoKiraDeck/)
 ![Rust](https://img.shields.io/badge/Rust-WASM-orange?logo=rust)
 ![React](https://img.shields.io/badge/React-Three.js%20%2F%20R3F-61DAFB?logo=react)
 ![Python](https://img.shields.io/badge/Python-FastAPI%20%2B%20SciPy-3776AB?logo=python)
 
-**[▶ Open the live demo](https://orls967.github.io/AoKira/)**
+**[▶ Open the live demo](https://orls967.github.io/AoKiraDeck/)**
 
 ![AoKira Overview: live 3D workcell running the pick-and-place showcase](docs/screenshots/01-overview-hero.png)
 
@@ -69,7 +69,7 @@ AoKira brings all of this together around **one deterministic simulation core** 
 
 | Mode | What runs | What you get |
 |---|---|---|
-| **[GitHub Pages](https://orls967.github.io/AoKira/)** (static) | React UI + Rust/WASM engine in your browser | Overview, Digital Twin, Simulation Lab, event-derived Analytics KPIs and charts. The status pill shows `API Offline`, and Python-only panels show a graceful *Backend Unavailable* state. |
+| **[GitHub Pages](https://orls967.github.io/AoKiraDeck/)** (static) | React UI + Rust/WASM engine in your browser | Overview, Digital Twin, Simulation Lab, event-derived Analytics KPIs and charts. The status pill shows `API Offline`, and Python-only panels show a graceful *Backend Unavailable* state. |
 | **Local full stack** | The above + FastAPI service on `:8000` | Everything, including Python bottleneck/forecast/energy enrichment, scenario comparison and SLSQP optimization. |
 
 > Screenshots marked **(live)** were captured from the deployed GitHub Pages site. Screenshots marked **(full stack)** were captured from a local build connected to the FastAPI service. All of them come from [`apps/web/screenshots/capture.spec.ts`](apps/web/screenshots/capture.spec.ts) (see [Regenerating screenshots](#regenerating-screenshots)).
@@ -458,7 +458,7 @@ Open http://localhost:5173. If you leave out `VITE_API_BASE_URL`, the app runs i
 | Variable | Where | Purpose |
 |---|---|---|
 | `VITE_API_BASE_URL` | web build | FastAPI base URL. If unset, the app runs offline (WASM only). |
-| `VITE_BASE_PATH` | web build | Public base path (`/AoKira/` for GitHub Pages) |
+| `VITE_BASE_PATH` | web build | Public base path (`/AoKiraDeck/` for GitHub Pages) |
 | `AOKIRA_CORS_ORIGINS` | API | Comma-separated allowed origins (default: localhost dev/preview + `https://orls967.github.io`) |
 
 To connect the hosted Pages build to a deployed API, set the repository variable **`VITE_API_BASE_URL`** (*Settings → Secrets and variables → Actions → Variables*) and re-run the workflow.
@@ -494,14 +494,14 @@ cd apps/web && npm run typecheck && npm run test && npm run test:e2e   # E2E nee
 | **Web** (14 tests) | `FE-01..05`: Simulation Lab transport/fault, Digital Twin tree & selection, Analytics empty + offline, Optimization compare/run/infeasible/dwell lock/Compare Objectives, reduced-motion & WebGL 2D fallback, routing & config loading |
 | **E2E** (5 tests) | `E2E-01..05` in real Chrome + WebGL against Uvicorn: overview, twin, full cycle → analytics, optimization (including three distinct objective results) + offline, mobile 390×844 |
 
-**GitHub Actions** ([`ci-deploy.yml`](.github/workflows/ci-deploy.yml)) runs on every push and PR to `main`: `rust-and-wasm` → `python-api` (including the Docker health smoke test) → `web-and-e2e` (including Playwright and the `/AoKira/` Pages bundle with a `404.html` SPA fallback) → `deploy-pages` (on `main` only).
+**GitHub Actions** ([`ci-deploy.yml`](.github/workflows/ci-deploy.yml)) runs on every push and PR to `main`: `rust-and-wasm` → `python-api` (including the Docker health smoke test) → `web-and-e2e` (including Playwright and the `/AoKiraDeck/` Pages bundle with a `404.html` SPA fallback) → `deploy-pages` (on `main` only).
 
 ### Regenerating screenshots
 
 ```bash
 cd apps/web
 # Live GitHub Pages (browser-only views, mobile)
-SHOTS_TARGET=pages SHOTS_BASE_URL=https://orls967.github.io/AoKira/ npm run screenshots
+SHOTS_TARGET=pages SHOTS_BASE_URL=https://orls967.github.io/AoKiraDeck/ npm run screenshots
 # Local full stack (API running on :8000, build served on :4174)
 SHOTS_TARGET=api SHOTS_BASE_URL=http://127.0.0.1:4174/ npm run screenshots
 ```

@@ -4,7 +4,7 @@ import { defineConfig } from '@playwright/test';
  * Captures the README screenshot gallery into `docs/screenshots/`.
  *
  *   # Live GitHub Pages site (browser-only Rust/WASM mode, API offline)
- *   SHOTS_TARGET=pages SHOTS_BASE_URL=https://orls967.github.io/AoKira/ \
+ *   SHOTS_TARGET=pages SHOTS_BASE_URL=https://orls967.github.io/AoKiraDeck/ \
  *     npx playwright test -c playwright.screenshots.config.ts
  *
  *   # Local build wired to the FastAPI service (Python enrichment & optimization)

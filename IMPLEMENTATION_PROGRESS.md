@@ -1,9 +1,9 @@
 # AoKira — Implementation Progress Tracker
 
-**Current Phase:** Phases 1–8 Complete · Post-delivery: CI green, GitHub Pages live (https://orls967.github.io/AoKira/)
+**Current Phase:** Phases 1–8 Complete · Post-delivery: CI green, GitHub Pages live (https://orls967.github.io/AoKiraDeck/)
 **Last Updated:** 2026-11-16
 **Branch:** `main`
-**Remote:** `https://github.com/Orls967/AoKira.git`
+**Remote:** `https://github.com/Orls967/AoKiraDeck.git`
 
 ---
 
@@ -91,8 +91,8 @@
 
 ## Phase 8: CI/CD Workflow, Production Deployment Prep & Final Docs — DONE
 
-- Created `.github/workflows/ci-deploy.yml` covering `rust-and-wasm` (`fmt`, `clippy`, `test`, `wasm-pack`), `python-api` (`ruff`, `pytest`, Docker build + `/api/v1/health` container smoke test), `web-and-e2e` (`typecheck`, `vitest`, Playwright `E2E-01..05`, and `/AoKira/` Pages build with `404.html` SPA fallback), and `deploy-pages` (`actions/deploy-pages@v4`).
-- Verified YAML workflow validity (`yaml.safe_load` parsed all 4 jobs cleanly) and verified `VITE_BASE_PATH=/AoKira/` production bundle rewrites `/AoKira/` assets, `/AoKira/favicon.svg`, and `/AoKira/assets/aokira_engine_bg-*.wasm`.
+- Created `.github/workflows/ci-deploy.yml` covering `rust-and-wasm` (`fmt`, `clippy`, `test`, `wasm-pack`), `python-api` (`ruff`, `pytest`, Docker build + `/api/v1/health` container smoke test), `web-and-e2e` (`typecheck`, `vitest`, Playwright `E2E-01..05`, and `/AoKiraDeck/` Pages build with `404.html` SPA fallback), and `deploy-pages` (`actions/deploy-pages@v4`).
+- Verified YAML workflow validity (`yaml.safe_load` parsed all 4 jobs cleanly) and verified `VITE_BASE_PATH=/AoKiraDeck/` production bundle rewrites `/AoKiraDeck/` assets, `/AoKiraDeck/favicon.svg`, and `/AoKiraDeck/assets/aokira_engine_bg-*.wasm`.
 - Checked local Docker availability (`docker info` reported daemon socket unavailable on macOS host; CI enforces Docker image smoke testing on Ubuntu runners).
 - Updated `README.md` with implemented workspace layout, verified local/CI setup commands, measured Phase 7/8 performance baselines, offline/synthetic disclaimers, and deployment guide.
 
